@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style> @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;900&display=swap');
+    	body {
+        	margin: 0;
+            background-color: #25150C;
+            color: white;
+            user-select: none;
+              font-family: 'Inter', sans-serif;
+        }
+    	main {
+            width: 39rem;
+            height: 9rem;
+            position: fixed;
+            padding: 1rem;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #533320;
+            border-radius: 1.5rem;
+        }
+        
+    	div {
+        	width: 4rem;
+            height: 4rem;
+            position: absolute;
+            border-radius: 1.5rem;
+            line-height: 4rem;
+            text-align: center;
+          z-index: 3;
+          background-color: #945228;
+        background-repeat: no-repeat;
+        background-size: fit;
+        background-attachment: fixed;
+        background-position: center; 
+        box-shadow: inset 0.25rem 0.25rem 0.25rem #00000040, inset -0.25rem -0.25rem 0.25rem #ffffff20;
+        }
+        
+        @keyframes img_enter {from {opacity: 0; transform: translateY(0);}}
+        img {
+          animation: 0.4s img_enter;
+          width: 4rem;
+          height: 4rem;
+          position: absolute;
+          z-index: 4;
+          transform: translateY(-1rem);
+          border-radius: 1.5rem;
+          background-color: #ffffff44;
+          transition: 0.5s;
+        }
+        
+        @keyframes fanfare {
+          from {opacity: 0; }
+          20% {transform: translate(-50%, -50%) translateY(-0.5rem) scale(1.3); opacity: 1;}
+          to {opacity: 0;}
+        }
+        @keyframes fanfare_permanent {
+          from {opacity: 0; }
+          20% {transform: translate(-50%, -50%) translateY(-0.5rem) scale(1.3); opacity: 1;}
+          to {opacity: 1;}
+        }
+        h2 {
+          animation: 3.1s fanfare;
+          font-size: 2rem;
+          margin: 0;
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          color: white;
+          font-weight: bold;
+          text-shadow: 0 0 0.5rem black;
+          text-align: center;
+        }
+        
+        h2 b[team="0"] {
+          font-weight: bold;
+          color: #07f;
+        }
+        h2 b[team="1"] {
+          font-weight: bold;
+          color: #f01;
+        }
+        
+        h2 p{
+          font-weight: normal;
+          font-size: 1.125rem;
+        }
+    </style>
+</head>
+<body>
+<main></main>
+<script>
+	let input_disabled = false;
+	let all_pits = [];
+    let grand_pits_numbers = [null, null];
+	function pit(team, count, x, y, big) {
+    	let pit = {
+        	team: team,
+            count: count,
+            big: big
+        };
+        if (big) grand_pits_numbers[team] = all_pits.length;
+        let element = document.createElement("div");
+        document.querySelector("main").appendChild(element);
+        element.style.left = x*5+1+"rem";
+        element.style.top = y*5+1+"rem";
+        //element.style.outlineColor = ["#08f","#f44"][team];
+        pit.element = element;
+        if (big) element.style.height = "9rem";
+        pit.element.setAttribute("pitnumber", all_pits.length);
+        pit.element.setAttribute("onclick", "execute_pit("+all_pits.length+")");
+        all_pits.push(pit);
+        return pit;
+    }
+    
+    let timeint = 500;
+    function execute_pit(pit_number) {
+    	if (input_disabled) return;
+    	let pit = all_pits[pit_number];
+        if (pit.big) return;
+        if (!pit.count) return;
+        let team = pit.team;
+        if (team != turn) return;
+        input_disabled = true;
+        let count = pit.count;
+        let element = document.createElement("img");
+        document.querySelector("main").appendChild(element);
+        [element.style.left, element.style.top] = [pit.element.style.left, pit.element.style.top];
+        element.setAttribute("src","mancala-seed-0.png");
+        //element.style.boxShadow = ["0 0 1rem #0000ff44", "0 0 1rem #ff000044"][turn];
+        element.style.backgroundColor = ["#0044ff88", "#ff000088"][turn];
+        pit.count = 0;
+        vis_update_pit(pit_number);
+        //from count, sew seeds along the pit path
+        let timeout = timeint;
+        let count_dual = count;
+        setTimeout(function(){
+          element.setAttribute("src","mancala-seed-"+count_dual+".png");
+        }, timeint*0.3);  
+        while (count) {
+            count--;
+            setTimeout(function(){
+              count_dual--;
+              pit_number = (pit_number+1)%all_pits.length;
+              [element.style.left, element.style.top] = [all_pits[pit_number].element.style.left, all_pits[pit_number].element.style.top];
+              if (all_pits[pit_number].big) element.style.top = "calc("+all_pits[pit_number].element.style.top+" + 2.5rem)"
+              setTimeout(function(){
+                element.setAttribute("src","mancala-seed-"+count_dual+".png");
+              }, timeint*0.3);
+              all_pits[pit_number].count++;
+              vis_update_pit(pit_number);
+            }, timeout)
+            timeout += timeint;
+        }
+        setTimeout(function(){
+          if (team_pits_empty(0)) {
+          element.remove();
+            run_endgame(0);
+          } else if (team_pits_empty(1)) {
+          element.remove();
+            run_endgame(1);
+          } else if (all_pits[pit_number].big) {
+          element.remove();
+                fanfare(["<b team=\"0\">Blue</b> goes again!","<b team=\"1\">Red</b> goes again!"][turn]);
+                input_disabled = false;
+            } else if (all_pits[pit_number].count == 1 && turn == all_pits[pit_number].team && all_pits[12-pit_number].count) {
+            	//steal ALL From opposite
+                let opposite_pit_number = 12-pit_number;
+                fanfare("steal!");
+                [element.style.left, element.style.top] = [all_pits[opposite_pit_number].element.style.left, all_pits[opposite_pit_number].element.style.top];
+                setTimeout(function() {
+                  all_pits[grand_pits_numbers[turn]].count += all_pits[opposite_pit_number].count;
+                  element.setAttribute("src","mancala-seed-"+all_pits[opposite_pit_number].count+".png");
+                  all_pits[opposite_pit_number].count = 0;
+                  vis_update_pit(opposite_pit_number);
+                  setTimeout(function(){
+                    [element.style.left, element.style.top] = [all_pits[grand_pits_numbers[turn]].element.style.left, "calc("+all_pits[grand_pits_numbers[turn]].element.style.top+" + 2.5rem)"];
+                    setTimeout(function(){
+                      vis_update_pit(grand_pits_numbers[turn]);
+                      element.remove();
+                      rotate_turn();
+                    }, timeint);
+                  }, timeint);
+                }, timeint);
+            } else {
+          element.remove();
+            	rotate_turn();
+            }
+        }, timeout)
+    }
+    
+    function fanfare(text, remain = false) {
+    	let h2 = document.createElement("h2");
+        h2.innerHTML = text;
+        document.body.appendChild(h2);
+        if (remain) h2.style.animation = "3.1s fanfare_permanent";
+        else setTimeout(function(){
+        h2.remove()
+      }, 3000);
+    }
+    function rotate_turn() {
+      input_disabled = false;
+      for (team of [0, 1]) {
+        let all_empty = true;
+        for (pit of all_pits) if (!pit.big && pit.team == team && pit.count) all_empty = false;
+        if (all_empty) {
+          run_endgame();
+          return;
+        }
+      }
+    	turn = (turn+1)%2;
+    }
+    
+    function team_pits_empty(team) {
+      for (pit of all_pits) if (!pit.big && pit.team == team && pit.count) return false;
+      return true;
+    }
+    
+    function run_endgame(team) { //team is just the side whose clear activated the endgame
+      fanfare(["<b team=\"0\">Blue</b> has cleared their side...", "<b team=\"1\">Red</b> has cleared their side..."][team]);
+      let counts = [0, 0];
+      for (pit of all_pits) counts[pit.team] += pit.count;
+      let wincase = 0; //0 = tie, 1 = blue has more, 2 = red has more
+      if (counts[1] > counts[0]) wincase = 2;
+      if (counts[1] < counts[0]) wincase = 1;
+      setTimeout(function(){
+        fanfare(["It's a tie!<p>Both players have "+counts[0]+" pieces on their side and store.</p>","<b team=\"0\">Blue</b> wins!<p>They have more pieces on their side and store.</p>","<b team=\"1\">Red</b> wins!<p>They have more pieces on their side.</p>"][wincase], true);
+      }, 3000);
+      console.log(wincase);
+    }
+    
+    function vis_update_pit(pit_number, do_anim = true) {
+    	let pit = all_pits[pit_number];
+    	//pit.element.innerText = pit.count;
+      setTimeout(function(){
+        pit.element.style.backgroundImage = "url('mancala-seed-"+pit.count+".png')";
+      }, timeint*0.3);
+      if (do_anim) {
+        let prev = last_counts[pit_number];
+        let next = pit.count;
+        animate_pieces(pit_number, next-prev);
+        last_counts[pit_number] = pit.count;
+      }
+    }
+    
+    pit(0, 4, 1, 1, false);
+    pit(0, 4, 2, 1, false);
+    pit(0, 4, 3, 1, false);
+    pit(0, 4, 4, 1, false);
+    pit(0, 4, 5, 1, false);
+    pit(0, 4, 6, 1, false);
+    pit(0, 0, 7, 0, true);
+    
+    pit(1, 4, 6, 0, false);
+    pit(1, 4, 5, 0, false);
+    pit(1, 4, 4, 0, false);
+    pit(1, 4, 3, 0, false);
+    pit(1, 4, 2, 0, false);
+    pit(1, 4, 1, 0, false);
+    pit(1, 0, 0, 0, true);
+    
+    let turn = 0;
+    
+    
+    for (let i = 0; i < all_pits.length; i++)
+    	vis_update_pit(i, false);
+        
+    //create index of last remembered counts. for use in animation
+    let last_counts = []
+    for (let i = 0; i < all_pits.length; i++)
+    	last_counts.push(all_pits[i].count);
+    
+    function animate_pieces(pit_number, change) {
+      return;
+      if (change == 0) return;
+      let element = document.createElement("img");
+      element.setAttribute("class","lilanim");
+      element.style.left = all_pits[pit_number].element.style.left;
+      element.style.top = all_pits[pit_number].element.style.top;
+      let team = all_pits[pit_number].team; //0 to bottom, 1 to top
+      let big = all_pits[pit_number].big; //true big, false normal
+      let add = change > 0;
+      element.style.animation = timeint*2+50+"ms lilanim_team"+team+"_big"+big+"_add"+add;
+      element.setAttribute("src","mancala-seed-"+Math.abs(change)+".png");
+      document.querySelector("main").appendChild(element);
+      setTimeout(function(){
+        element.remove();
+      }, timeint*2);
+    	//positive change : adding to pit
+        //negative change : removing from pit
+    }
+        
+</script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+    
+	html {font-size: 28px;}
+    * {font-family: 'Inter', sans-serif;}
+    
+    body {
+    	margin: 0;
+        background-color: #222;
+        user-select: none;
+    }
+    
+	main {
+    	position: fixed;
+        left: calc(50vw - 9rem);
+        bottom: calc(50vh + 2rem);
+    }
+    
+    @keyframes main_div_enter {
+    	from {opacity: 0;}
+    	50% {opacity: 0; transform: scale(0.875) translateY(0.5rem);}
+    }
+	main div {
+    	width: 2rem;
+        height: 2rem;
+        border: solid 2px #666;
+        transition: border-color 0.5s;
+        position: absolute;
+        animation: 2s main_div_enter;
+    }
+    
+    main div[rosette] {
+    	background-color: #444;
+        text-align: center;
+    }
+    main div[rosette]::before {
+    	content: '🏵️';
+        line-height: 2rem;
+        font-size: 1.5rem;
+        filter: grayscale(100%);
+    }
+    
+    @keyframes main_button_enter_1 {
+    	from {opacity: 0; transform: translateY(-8rem);}
+    }
+    @keyframes main_button_enter_2 {
+    	from {opacity: 0; transform: translateY(8rem);}
+    }
+    main button {
+    	width: 1.5rem;
+        height: 1rem;
+        border: none;
+        position: absolute;
+        background-color: gray;
+        transition: 0.5s top, 0.5s left, 0.1s transform;
+        border-radius: 100%;
+        border: solid 0px white;
+    }
+    main button:focus {
+    	outline: none;
+    }
+    
+    
+    @keyframes nav_span_enter_1 {from {transform: translateY(-2rem) rotate(20deg); opacity: 0;}}
+    @keyframes nav_span_enter_2 {from {transform: translateY(-3rem) rotate(-40deg); opacity: 0;}}
+    @keyframes nav_span_enter_3 {from {transform: translateY(-4rem) rotate(60deg); opacity: 0;}}
+    @keyframes nav_span_enter_4 {from {transform: translateY(-5rem) rotate(-80deg); opacity: 0;}}
+    @keyframes nav_span_exit {to {transform: translateY(-0.125rem) scale(0.9); opacity: 0;}}
+    nav {
+    	border: solid 2px #222;
+        border-top-width: 0;
+        transition: 0.5s;
+        text-align: center;
+        width: 8rem;
+        margin: 0 auto;
+        padding: 0.5rem 0;
+        padding-bottom: 1rem;
+        border-radius: 0 0 0.5rem 0.5rem;
+        color: white;
+        position: relative;
+    }
+    nav span {
+    	width: 1rem;
+        height: 1rem;
+        line-height: 1rem;
+        text-align: center;
+        border: solid 2px white;
+        border-radius: 0.25rem;
+        display: inline-block;
+        margin: 0.125rem;
+        font-size: 1rem;
+        transition: opacity 0.5s;
+    }
+    nav span[used] {opacity: 0.3;}
+    nav span:nth-child(2) {animation: 0.5s nav_span_enter_1;}
+    nav span:nth-child(3) {animation: 0.5s nav_span_enter_2;}
+    nav span:nth-child(4) {animation: 0.5s nav_span_enter_3;}
+    nav span:nth-child(5) {animation: 0.5s nav_span_enter_4;}
+    @keyframes nav_h2_enter {
+    	from {opacity: 0; transform: translateY(-1rem);}
+    }
+    nav h2 {
+    	font-size: 0.5rem;
+        text-align: center;
+        margin: 0;
+        animation: 1s nav_h2_enter;
+        position: absolute;
+        bottom: 0.25rem;
+        width: inherit;
+    }
+    @keyframes nav_h3_enter {
+    	from {opacity: 0; transform: translateY(-1rem);}
+    }
+    nav h3 {
+    	font-size: 1rem;
+        text-align: center;
+        margin: 0;
+        margin-top: 0.25rem;
+        animation: 1s nav_h3_enter;
+    }
+    
+    header {
+      width: 16rem;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    header button {
+      width: 16rem;
+      font-family: inherit;
+      background-color: #333;
+      border: none;
+      color: white;
+      font-size: 1rem;
+      padding: 1rem 0;
+      margin: 0.5rem 0;
+    }
+    
+    header button:focus {
+      outline: none;
+    }
+    
+    header button:hover {
+      outline: solid 0.125rem #555;
+      cursor: pointer;
+    }
+    
+</style>
+</head>
+<body>
+<header>
+  <button onclick="start_game(3)">3-token game (short)</button>
+  <button onclick="start_game(5)">5-token game (long)</button>
+  <button onclick="start_game(7)">7-token game (extra long)</button>
+</header>
+<nav></nav> <!-- dice container -->
+<main></main> <!-- world. tiles are div, counters are button -->
+<script>
+/* class Tile
+- x, y
+- occupied (Counter)
+*/
+/* class Counter
+- team
+- circuit (Tile[]), progress (-1, 0~13, 14)
+- highlight_for_counter(counter)      un_highlight()
+- update_counter_position(counter)
+*/
+let colors = ["#f04","#06f"];
+let colors_dark = ["#802", "#038"];
+
+let top_circuit = [];
+let btm_circuit = [];
+
+let top_counters = [];
+let btm_counters = [];
+
+let in_highlight = false;
+let can_highlight = true;
+
+let roll = 2;
+let turn = 0;
+
+function start_game(counters_each = 3) {
+  document.querySelector("button").parentElement.remove();
+  for (let i = 0; i <= 3; i++) {
+    top_circuit[i] = {
+        x: 3-i,
+          y: 0,
+          occupied: null,
+          rosette: false
+      };
+    btm_circuit[i] = {
+        x: 3-i,
+          y: 2,
+          occupied: null,
+          rosette: false
+      };
+  }
+  for (let i = 4; i <= 11; i++) {
+    let tile = {
+      x: i-4,
+      y: 1,
+      occupied: null,
+      rosette: false
+    };
+    top_circuit[i] = tile;
+    btm_circuit[i] = tile;
+  }
+  for (let i = 12; i <= 13; i++) {
+    top_circuit[i] = {
+          x: 19-i,
+          y: 0,
+          occupied: null,
+          rosette: false
+      };
+    btm_circuit[i] = {
+        x: 19-i,
+          y: 2,
+          occupied: null,
+          rosette: false
+      };
+  };
+  for (index of [3,7,13]) for (circuit of [top_circuit, btm_circuit])
+    circuit[index].rosette = true;
+
+  for (let i = 0; i < 14; i++) {
+    let div = document.createElement("div");
+      div.style.left = top_circuit[i].x * 36 /16+"rem";
+      div.style.top = top_circuit[i].y * 36 /16+"rem";
+      if (top_circuit[i].rosette) div.setAttribute("rosette","true");
+      document.querySelector("main").appendChild(div);
+      top_circuit[i].div = div;
+      if (4 <= i && i <= 11) continue;
+      div = document.createElement("div");
+      div.style.left = btm_circuit[i].x * 36 /16+"rem";
+      div.style.top = btm_circuit[i].y * 36 /16+"rem";
+      if (btm_circuit[i].rosette) div.setAttribute("rosette","true");
+      document.querySelector("main").appendChild(div);
+      btm_circuit[i].div = div;
+  }
+
+  let counter_files = Math.ceil(counters_each/2);
+  for (let i = 0; i < counters_each; i++) {
+    top_counters[i] = {
+        team: 0,
+          circuit: top_circuit,
+          progress: -1,
+          x_off: i%counter_files*30+(i>=counter_files?15:0),
+          y_off: Math.floor(i/counter_files)*20
+      };
+    btm_counters[i] = {
+        team: 1,
+          circuit: btm_circuit,
+          progress: -1,
+          x_off: i%counter_files*30+(i>=counter_files?15:0),
+          y_off: Math.floor(i/counter_files)*20
+      };
+  }
+
+  for (let i = 0; i < top_counters.length; i++) {
+    let counter = top_counters[i];
+    let button = document.createElement("button");
+      counter.element = button;
+      button.style.backgroundColor = colors[0];
+      button.style.boxShadow = "0 0.25rem "+colors_dark[0]+", 0 0.125rem 0.25rem black";
+      button.style.animation = 1+i/3+"s main_button_enter_1";
+      document.querySelector("main").appendChild(button);
+      button.setAttribute("onclick","if (turn==0) advance_counter(top_counters["+i+"])");
+      button.setAttribute("onmouseenter","if (can_highlight && turn==0) highlight_for_counter(top_counters["+i+"])");
+      button.setAttribute("onmouseleave","un_highlight()");
+      update_counter_position(counter);
+  }
+  for (let i = 0; i < btm_counters.length; i++) {
+    let counter = btm_counters[i];
+    let button = document.createElement("button");
+      counter.element = button;
+      button.style.backgroundColor = colors[1];
+      button.style.boxShadow = "0 0.25rem "+colors_dark[1]+", 0 0.125rem 0.25rem black";
+      button.style.animation = 1+i/3+"s main_button_enter_2";
+      document.querySelector("main").appendChild(button);
+      button.setAttribute("onclick","if (turn==1) advance_counter(btm_counters["+i+"])");
+      button.setAttribute("onmouseenter","if (can_highlight && turn==1) highlight_for_counter(btm_counters["+i+"])");
+      button.setAttribute("onmouseleave","un_highlight()");
+      update_counter_position(counter);
+  }
+
+  setTimeout(function(){
+    let h2 = document.createElement("h2");
+    h2.innerText = "ROLL";
+    document.querySelector("nav").appendChild(h2);
+    prompt_turn(0);
+  }, 3000);
+}
+
+function advance_counter(counter, n = roll) {
+	if (counter.progress == 14) return;
+	roll = 0;
+	//mark that this is no longer occupied
+    if (counter.progress >= 0 && counter.progress <= 13)
+    	counter.circuit[counter.progress].occupied = null;
+    //find cap for n. if n+progress > 14, make sure n+progress = 14
+    if (n + counter.progress > 14) n = 14 - counter.progress;
+	//check that it is this counter's turn
+    for (let i = 0; i < n; i++) setTimeout(function(){
+    	if (counter.progress < 14) {
+        	counter.progress++;
+        	update_counter_position(counter);
+            for (span of document.querySelector("nav").querySelectorAll("span")) {
+            	if (!span.getAttribute("used")) {
+                	span.setAttribute("used","true");
+                    break;
+                }
+            }
+        }
+        if (i == n-1) { //final round
+          let go_again = false;
+          if (counter.progress >= 0 && counter.progress <= 13) {
+            //check for collision, and set occupied stuff
+            let landed_box = counter.circuit[counter.progress];
+            if (landed_box.occupied) {
+              landed_box.occupied.progress = -1;
+              update_counter_position(landed_box.occupied);
+            }
+            landed_box.occupied = counter;
+            go_again = landed_box.rosette;
+          }
+          setTimeout(function(){
+          	//visually remove the dice
+            for (d of document.querySelectorAll("nav span")) {
+            	d.style.animation = "0.5s nav_span_exit";
+            }
+          }, 500);
+          setTimeout(function(){
+            prompt_turn(go_again?turn:1-turn);
+          }, 1000);
+        }
+    },500*i);
+}
+
+function update_counter_position(counter) {
+	can_highlight = false;
+	let x; let y;
+	if (counter.progress == -1) {
+        [x, y] = (counter.circuit==btm_circuit) ?
+        	[114-counter.x_off, 120+counter.y_off] :
+            [114-counter.x_off, -30-counter.y_off];
+        //add subtract x_off y_off
+    } else if (counter.progress == 14) {
+        [x, y] = (counter.circuit==btm_circuit) ?
+        	[221+counter.x_off, 120+counter.y_off] :
+            [221+counter.x_off, -30-counter.y_off];
+        //add subtract x_off y_off
+    } else {
+    	x = 36*counter.circuit[counter.progress].x+5;
+    	y = 36*counter.circuit[counter.progress].y+7;
+    }
+    //x += (Math.random()-0.5)*4;
+    //y += (Math.random()-0.5)*4;
+	counter.element.style.top = y /16+"rem";
+	counter.element.style.left = x /16+"rem";
+	//counter.element.style.left = counter.circuit[counter.progress].x
+	//counter.element.style.top =
+    	//counter.circuit[counter.progress].y
+}
+
+function prompt_turn(n) { //0:top, 1:bottom
+	if (in_highlight) un_highlight();
+	turn = n;
+    for (el of document.querySelectorAll("nav span"))
+    	el.remove();
+	for (let player = 0; player < 1; player++) {
+      let win = true;
+      for (counter of [top_counters,btm_counters][player])
+      	if (counter.progress < 14) win = false;
+      if (win) {
+      	document.querySelector("nav h2").remove();
+      	let h3 = document.createElement("h3");
+        h3.innerText = 'Player '+(player+1) + ' wins';
+        document.querySelector("nav").appendChild(h3);
+      	return;
+      }
+    }
+	roll = 0;
+    for (let i = 0; i < 4; i++) {
+    	let success = Math.random() < 0.5;
+        if (success) roll++;
+        let span = document.createElement("span");
+        span.innerHTML = success ? "●" : "&nbsp;";
+        if (!success) span.setAttribute("used","true");
+        document.querySelector("nav").appendChild(span);
+    }
+    document.querySelector("nav").style.borderColor = colors[turn];
+    document.querySelector("nav").style.backgroundColor = colors_dark[turn];
+    if (roll == 0) {
+      setTimeout(function(){
+        //visually remove the dice
+        for (d of document.querySelectorAll("nav span")) {
+          d.style.animation = "0.5s nav_span_exit";
+        }
+      }, 1500);
+      setTimeout(function(){
+        prompt_turn(1-turn);
+      }, 2000);
+    } else can_highlight = true;
+}
+
+function highlight_for_counter(counter) {
+	in_highlight = true;
+	counter.element.style.borderWidth = "1px";
+	counter.element.style.transform = "translateY(-0.125rem)";
+	counter.element.style.cursor = "pointer";
+	//make a border around where we'll end up on this roll
+    for (tile of counter.circuit)
+    	tile.div.style.borderColor = "#666";
+    let target = counter.progress + roll;
+    if (target < 14) counter.circuit[target].div.style.borderColor = colors[turn];
+}
+function un_highlight() {
+	in_highlight = false;
+	for (circuit of [top_circuit,btm_circuit]) for (tile of circuit)
+    	tile.div.style.borderColor = "#666";
+    for (counters of [top_counters,btm_counters]) for (counter of counters) {
+    	counter.element.style.borderWidth = "0px";
+    	counter.element.style.transform = "none";
+    	counter.element.style.cursor = "default";
+    }
+}
+</script>
+</body>
+</html>

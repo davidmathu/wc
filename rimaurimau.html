@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+	body {
+    	user-select: none;
+        background-color: #222;
+        font-family: Inter, sans-serif;
+        transition: 1s background-color;
+    }
+    h2 {
+    	position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        font-family: 2rem;
+        font-weight: bold;
+        padding: 1rem;
+        border-radius: 1.5rem;
+        color: white;
+        box-shadow: 0 0 1rem black;
+        color: #222;
+    }
+    h2 span {
+    	display: block;
+        font-size: 1rem;
+        font-weight: normal;
+        background-color: #222;
+        padding: 0.5rem 1rem;
+        margin-top: 0.5rem;
+        border-radius: 0.75rem;
+        color: white;
+    }
+    main {
+        outline: solid 0.125rem #ffffff00;
+        outline-offset: 0.5rem;
+        /*width: 17rem;  5->17, 9->31    m=3.5 b=-0.5
+        height: 31rem; */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        position: fixed;
+        transition: outline 1s, outline-offset 1s;
+       	border-radius: 0.75rem;
+    }
+    @keyframes main_div_enter {
+      from {opacity: 0; scale: 0.9; transform: translateY(1rem);}
+    }
+	main div {
+    	position: absolute;
+        width: 2.25rem;
+        height: 2.25rem;
+        background-color: #333;
+        outline: solid 2px #555;
+        line-height: 70%;
+        z-index: 1;
+        border-radius: 100%;
+        box-shadow: 0 0 1rem black;
+        transition: 0.2s outline-color, 0.2s background-color;
+        animation: 1s main_div_enter;
+    }
+    main div:hover[goable]:not([goable="false"]) {
+    	background-color: #444;
+    }
+    main div[goable="man"] {
+        cursor: pointer;
+    }
+    main div[goable="tiger"] {
+        cursor: pointer;
+    }
+    main div[goable="tigerkill"] {
+        cursor: pointer;
+    }
+	main img {
+    	position: absolute;
+        width: 2rem;
+        height: 1.75rem;
+        z-index: 2;
+        background-color: black;
+        transition: 0.5s left, 0.5s top, 0.5s opacity;
+        border-radius: 100%;
+        cursor: pointer;
+        animation: 1s main_div_enter;
+    }
+    main img[team="man"] {
+    	background-color: white;
+        box-shadow: 0 0.25rem black;
+    }
+    main img[team="tiger"] {
+    	background-color: white;
+        box-shadow: 0 0.25rem black;
+    }
+    main img[selected="true"] {
+    	outline: solid 0.125rem white;
+    }
+    main hr {
+    	z-index: 0;
+        position: absolute;
+        width: 4.5rem;
+        margin: 0;
+        border: none;
+        outline: solid 1px #444;
+        animation: 1s main_div_enter;
+    }
+    
+    @keyframes table_exit {
+      to {opacity: 0; scale: 0.95}
+    }
+    table {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      border-collapse: collapse;
+    }
+    
+    table tr {
+      cursor: pointer;
+      border-left: solid 0.5rem var(--color);
+      z-index: 1;
+    }
+    
+    table tr:hover {
+      outline: solid 0.125rem var(--color);
+      outline-width: 0.125rem 0.125rem 0.125rem 0.5rem;
+      z-index: 2;
+    }
+    
+    table td {
+      padding: 1rem;
+      color: white;
+      font-size: 1.25rem;
+      color: gray;
+    }
+    
+    table td:first-child {
+      font-size: 1.5rem;
+      color: white;
+    }
+</style>
+</head>
+<body>
+<table>
+  <tr onclick="do_game(0)" style="--color: #EE3311;"><td>Rimau-Rimau</td><td>Tigers vs. Hunters</td><td>Malaysia</td></tr>
+  <tr onclick="do_game(1)" style="--color: #27C377;"><td>Adugo</td><td>Jaguars vs. Dogs</td><td>Brazil</td></tr>
+  <tr onclick="do_game(2)" style="--color: #5F1FBD;"><td>Komikan</td><td>Pumas vs. Sheep</td><td>Inca</td></tr>
+  <tr onclick="do_game(3)" style="--color: #EE9911;"><td>Bagh-Chal</td><td>Tigers vs. Goats</td><td>Nepal</td></tr>
+</table>
+<main></main>
+<p id="log" style="display: none;"></p>
+<script>
+/*
+class Node
+-x , y
+-neighbor[top, topright, right, bottomright, bottom, bottomleft, left, topleft]
+- holds			null		man			tiger
+*/
+
+let tiger_win_message = "Tiger wins<span>All hunters are captured</span>";
+let man_win_message = "Hunter wins<span>The tiger is trapped</span>";
+
+function do_game(n) {
+	//setup_bagh_chal();
+  tiger_win_message = [
+    "Tiger wins<span>All hunters are captured</span>",
+    "Jaguar wins<span>All dogs are captured</span>",
+    "Puma wins<span>All sheep are captured</span>",
+    "Tiger wins<span>All goats are captured</span>"
+  ][n];
+  man_win_message = [
+    "Hunter wins<span>The tiger is trapped</span>",
+    "Dog wins<span>The jaguar is trapped</span>",
+    "Sheep wins<span>The puma is trapped</span>",
+    "Goat wins<span>The tiger is trapped</span>"
+  ][n];
+  document.querySelector("table").style.animation = "1.1s table_exit";
+  setTimeout(function(){
+    document.querySelector("table").remove();
+    [setup_rimau, setup_adugo, setup_komikan, setup_bagh_chal][n]();
+    draw_lines();
+    rotate_turn(false);
+    rotate_turn(false);
+  }, 1000);
+}
+
+let colors = {};
+
+let all_nodes_list = [];
+let all_nodes_lookup = {};
+function new_node(x, y) {
+	let node = {
+    	x: x, y: y,
+        neighbor: [null, null, null, null, null, null, null, null],
+        holds: null
+    };
+    all_nodes_list.push(node);
+    if (!all_nodes_lookup[x]) all_nodes_lookup[x] = {};
+    all_nodes_lookup[x][y] = node;
+    let element = document.createElement("div");
+    document.querySelector("main").appendChild(element);
+    element.style.left = x*3.5+0.375 + "rem";
+    element.style.top = y*3.5 +0.375+ "rem";
+    element.setAttribute("x", x);
+    element.setAttribute("y", y);
+    node.element = element;
+    element.onclick = function() {
+    	log("click node");
+    	if (selection) {
+        	let origin_node = all_nodes_lookup[selection.x][selection.y];
+            let destination_node = all_nodes_lookup[this.getAttribute("x")][this.getAttribute("y")];
+            let piece = origin_node.holds;
+            log(selection.x+","+selection.y+ " to "+this.getAttribute("x")+","+this.getAttribute("y"));
+        	if (destination_node.holds) {
+            } else {
+            	//check conditions to see if this is valid move
+                let valid = false;
+                //check that they're neighbors
+                for (let dir = 0; dir < 8; dir++) {
+                	if (origin_node.neighbor[dir] == destination_node)
+                    	valid = true;
+                  if (piece.team == "tiger") {
+                      //extra check: are we just a tiger travelling in a direction across many men?
+                      let the_men = [];
+                      let looking_node = origin_node.neighbor[dir];
+                      while (looking_node && looking_node.holds && looking_node.holds.team == "man") {
+                      	the_men.push(looking_node.holds);
+                        looking_node = looking_node.neighbor[dir];
+                      }
+                      //looking_node is no longer man, or maybe no longer exists. if it still exists, and that final destination if the selected destination, we are a leaping tiger
+                      if (looking_node && looking_node == destination_node && tiger_capturable_men_lengths.includes(the_men.length)) {
+                      valid = true;
+                        for (man of the_men) {
+                              man.home.holds = null;
+                              man.home = null;
+                              update_piece_position(man);
+                        }
+                      }
+                  }
+                }
+                if (valid) {
+                    origin_node.holds = null;
+                    destination_node.holds = piece;
+                    piece.home = destination_node;
+                    update_piece_position(piece);
+                    selection = null;
+                    vis_clear();
+                    rotate_turn();
+                } //end valid check
+            } //end check for empty destination
+        } //end selection check
+    } //end node onclick
+    return node;
+}
+
+let selection = null;
+
+function link_nodes(ox, oy, dx, dy, direction) {
+	let origin = all_nodes_lookup[ox][oy];
+    let destination = all_nodes_lookup[dx][dy];
+	origin.neighbor[direction] = destination;
+    destination.neighbor[(direction+4)%8] = origin;
+}
+function unlink_node(ox, oy, direction) {
+	let origin = all_nodes_lookup[ox][oy];
+    let destination = origin.neighbor[direction];
+    destination.neighbor[(direction+4)%8] = null
+    origin.neighbor[direction] = null;;
+}
+
+
+//draw lines
+function draw_lines() {
+  for (origin of all_nodes_list) {
+      for (let dir = 0; dir < 4; dir++) {
+          let destination = origin.neighbor[dir];
+          if (!destination) continue;
+          let hr = document.createElement("hr");
+          document.querySelector("main").appendChild(hr);
+          let x = (origin.x+destination.x)/2;
+          let y = (origin.y+destination.y)/2;
+          hr.style.left = x*3.5-0.75+"rem";
+          hr.style.top = y*3.5+1.5+"rem";
+          let angle = Math.atan2(destination.y-origin.y, destination.x-origin.x);
+          hr.style.transform = "rotate("+angle+"rad)";
+      }
+  }
+}
+
+let tiger_capturable_men_lengths = [1];
+
+let all_pieces = [];
+function new_piece(team, x, y) {
+	let piece = {
+    	team: team, //"man" or "tiger"
+        home: all_nodes_lookup[x][y]
+    };
+    all_nodes_lookup[x][y].holds = piece;
+    all_pieces.push(piece);
+    let element = document.createElement("img");
+    document.querySelector("main").appendChild(element);
+    piece.element = element;
+    element.setAttribute("team", team);
+    element.style.backgroundColor = colors[team];
+    element.style.boxShadow = "0 0.25rem "+colors[team+"dark"];
+    element.setAttribute("src", "https://astronomy487.github.io/projects/duckie/art/empty.png");
+    update_piece_position(piece);
+    element.onclick = function() {
+    	log("piece click");
+    	//log(this.getAttribute("src")+" : "+the_team);
+    	if (this.getAttribute("team") != the_turn) return;
+    	//select this piece
+        vis_clear();
+        for (piece of all_pieces) if (piece.element == this) {
+        	if (selection && selection.x == piece.home.x && selection.y == piece.home.y) {
+            	//deselect
+                selection = null;
+                vis_clear();
+            	return;
+            }
+        	selection = {x: piece.home.x, y: piece.home.y};
+            piece.element.setAttribute("selected", "true");
+            //find valid destinations
+            for (let dir = 0; dir < 8; dir++) {
+            	let looking_node = all_nodes_lookup[selection.x][selection.y].neighbor[dir];
+                let the_men = [];
+                while (looking_node && looking_node.holds && looking_node.holds.team == "man") {
+                	the_men.push(looking_node.holds);
+                    looking_node = looking_node.neighbor[dir];
+                }
+                if (!looking_node) continue;
+                if (looking_node.holds) continue;
+                //log(piece.type + ", " + the_men.length);
+                if (piece.team == "man" && the_men.length > 0) continue;
+                if (piece.team == "tiger" && the_men.length && !tiger_capturable_men_lengths.includes(the_men.length)) continue;
+                looking_node.element.setAttribute("goable", the_men.length ? "tigerkill" : piece.team);
+                looking_node.element.style.outlineColor = the_men.length ? colors["tigerkill"] : colors[piece.team];
+            }
+        }
+    }
+    log("made piece at "+x+", " + y);
+    return piece;
+}
+
+function main_window_size(x, y) {
+	document.querySelector("main").style.width = -0.5+3.5*x+"rem";
+	document.querySelector("main").style.height = -0.5+3.5*y+"rem";
+}
+
+/*setTimeout(function() {
+	setup_bagh_chal();
+    draw_lines();
+    rotate_turn(false);
+    rotate_turn(false);
+}, 1000);*/
+function setup_rimau() {
+	document.body.style.backgroundColor = "#410";
+  //DEFINE GAME: ONE-TIGER RIMAU-RIMAU
+  colors = {
+	man: "#eb1",
+    tiger: "#e31",
+    mandark: "#b60",
+    tigerdark: "#811",
+    tigerkill: "#e81"
+  };
+  new_node(0, 0);
+  new_node(2, 0);
+  new_node(4, 0);
+  new_node(1, 1);
+  new_node(2, 1);
+  new_node(3, 1);
+  for (let x = 0; x < 5; x++) for (let y = 2; y < 7; y++) {
+      new_node(x, y);
+  }
+  new_node(1, 7);
+  new_node(2, 7);
+  new_node(3, 7);
+  new_node(0, 8);
+  new_node(2, 8);
+  new_node(4, 8);
+  //auto links
+  for (let ox = 0; ox < 5; ox++) for (oy = 0; oy < 9; oy++) {
+      if (!all_nodes_lookup[ox][oy]) continue;
+      for ([direction, add_x, add_y] of [
+          [0, 0, -1],
+          [1, 1, -1],
+          [2, 1, 0],
+          [3, 1, 1]
+      ]) {
+        let [dx, dy] = [ox+add_x, oy+add_y];
+        if (all_nodes_lookup[dx] && all_nodes_lookup[dx][dy])
+        if ((ox+oy+1)%2 || direction == 0 || direction == 2)
+        link_nodes(ox, oy, dx, dy, direction);
+      }
+  }
+  //special unlinks and relinks
+  for (y of [0, 1, 7, 8]) for (let x = 0; x < 5; x++) {
+      if (all_nodes_lookup[x][y]) {
+          for (let dir = 0; dir < 8; dir++) {
+              if (all_nodes_lookup[x][y].neighbor[dir])
+                  unlink_node(x, y, dir);
+          }
+      }
+  }
+  //top mountain
+  link_nodes(0, 0, 2, 0, 2);
+  link_nodes(2, 0, 4, 0, 2);
+  link_nodes(1, 1, 2, 1, 2);
+  link_nodes(2, 1, 3, 1, 2);
+  link_nodes(0, 0, 1, 1, 3);
+  link_nodes(4, 0, 3, 1, 5);
+  link_nodes(1, 1, 2, 2, 3);
+  link_nodes(3, 1, 2, 2, 5);
+  link_nodes(2, 0, 2, 1, 4);
+  link_nodes(2, 1, 2, 2, 4);
+  //bottom mountain
+  link_nodes(0, 8, 2, 8, 2);
+  link_nodes(2, 8, 4, 8, 2);
+  link_nodes(1, 7, 2, 7, 2);
+  link_nodes(2, 7, 3, 7, 2);
+  link_nodes(0, 8, 1, 7, 1);
+  link_nodes(1, 7, 2, 6, 1);
+  link_nodes(4, 8, 3, 7, 7);
+  link_nodes(3, 7, 2, 6, 7);
+  link_nodes(2, 8, 2, 7, 0);
+  link_nodes(2, 7, 2, 6, 0);
+  new_piece("tiger", 2, 2);
+  //new_piece("tiger", 2, 6);
+  for (let x = 1; x <= 3; x++) for (let y = 3; y <= 5; y++)
+      new_piece("man", x, y);
+  main_window_size(5, 9);
+}
+function setup_komikan() {
+	document.body.style.backgroundColor = "#001";
+  //DEFINE GAME: adugo
+  colors = {
+	man: "#edc",
+    tiger: "#205",
+    mandark: "#a98",
+    tigerdark: "#002",
+    tigerkill: "#ea1"
+  };
+  for (let x = 0; x < 5; x++) for (let y = 0; y < 5; y++) {
+      new_node(x, y);
+  }
+  new_node(1, 5);
+  new_node(2, 5);
+  new_node(3, 5);
+  new_node(0, 6);
+  new_node(2, 6);
+  new_node(4, 6);
+  //auto links
+  for (let ox = 0; ox < 5; ox++) for (oy = 0; oy < 7; oy++) {
+      if (!all_nodes_lookup[ox][oy]) continue;
+      for ([direction, add_x, add_y] of [
+          [0, 0, -1],
+          [1, 1, -1],
+          [2, 1, 0],
+          [3, 1, 1]
+      ]) {
+        let [dx, dy] = [ox+add_x, oy+add_y];
+        if (all_nodes_lookup[dx] && all_nodes_lookup[dx][dy])
+        if ((ox+oy+1)%2 || direction == 0 || direction == 2)
+        link_nodes(ox, oy, dx, dy, direction);
+      }
+  }
+  //special unlinks and relinks
+  for (y of [5, 6]) for (let x = 0; x < 5; x++) {
+      if (all_nodes_lookup[x][y]) {
+          for (let dir = 0; dir < 8; dir++) {
+              if (all_nodes_lookup[x][y].neighbor[dir])
+                  unlink_node(x, y, dir);
+          }
+      }
+  }
+  //bottom mountain
+  link_nodes(0, 6, 2, 6, 2);
+  link_nodes(2, 6, 4, 6, 2);
+  link_nodes(1, 5, 2, 5, 2);
+  link_nodes(2, 5, 3, 5, 2);
+  link_nodes(0, 6, 1, 5, 1);
+  link_nodes(1, 5, 2, 4, 1);
+  link_nodes(4, 6, 3, 5, 7);
+  link_nodes(3, 5, 2, 4, 7);
+  link_nodes(2, 6, 2, 5, 0);
+  link_nodes(2, 5, 2, 4, 0);
+  new_piece("tiger", 2, 6);
+  for (let x = 0; x < 5; x++) for (let y = 0; y < 2; y++)
+  	if (!all_nodes_lookup[x][y].holds)
+      new_piece("man", x, y);
+  new_piece("man", 0, 2);
+  new_piece("man", 4, 2);
+  main_window_size(5, 7);
+}
+function setup_adugo() {
+	document.body.style.backgroundColor = "#021";
+  //DEFINE GAME: adugo
+  colors = {
+	man: "#a98",
+    tiger: "#e51",
+    mandark: "#777",
+    tigerdark: "#831",
+    tigerkill: "#ea1"
+  };
+  for (let x = 0; x < 5; x++) for (let y = 0; y < 5; y++) {
+      new_node(x, y);
+  }
+  new_node(1, 5);
+  new_node(2, 5);
+  new_node(3, 5);
+  new_node(0, 6);
+  new_node(2, 6);
+  new_node(4, 6);
+  //auto links
+  for (let ox = 0; ox < 5; ox++) for (oy = 0; oy < 7; oy++) {
+      if (!all_nodes_lookup[ox][oy]) continue;
+      for ([direction, add_x, add_y] of [
+          [0, 0, -1],
+          [1, 1, -1],
+          [2, 1, 0],
+          [3, 1, 1]
+      ]) {
+        let [dx, dy] = [ox+add_x, oy+add_y];
+        if (all_nodes_lookup[dx] && all_nodes_lookup[dx][dy])
+        if ((ox+oy+1)%2 || direction == 0 || direction == 2)
+        link_nodes(ox, oy, dx, dy, direction);
+      }
+  }
+  //special unlinks and relinks
+  for (y of [5, 6]) for (let x = 0; x < 5; x++) {
+      if (all_nodes_lookup[x][y]) {
+          for (let dir = 0; dir < 8; dir++) {
+              if (all_nodes_lookup[x][y].neighbor[dir])
+                  unlink_node(x, y, dir);
+          }
+      }
+  }
+  //bottom mountain
+  link_nodes(0, 6, 2, 6, 2);
+  link_nodes(2, 6, 4, 6, 2);
+  link_nodes(1, 5, 2, 5, 2);
+  link_nodes(2, 5, 3, 5, 2);
+  link_nodes(0, 6, 1, 5, 1);
+  link_nodes(1, 5, 2, 4, 1);
+  link_nodes(4, 6, 3, 5, 7);
+  link_nodes(3, 5, 2, 4, 7);
+  link_nodes(2, 6, 2, 5, 0);
+  link_nodes(2, 5, 2, 4, 0);
+  new_piece("tiger", 2, 2);
+  for (let x = 0; x < 5; x++) for (let y = 0; y < 3; y++)
+  	if (!all_nodes_lookup[x][y].holds)
+      new_piece("man", x, y);
+  main_window_size(5, 7);
+}
+function setup_bagh_chal() {
+	document.body.style.backgroundColor = "#210";
+  //DEFINE GAME: bagh-chal
+  colors = {
+	man: "#dcb",
+    tiger: "#e91",
+    mandark: "#a98",
+    tigerdark: "#851",
+    tigerkill: "#e21"
+  };
+  for (let x = 0; x < 5; x++) for (let y = 0; y < 5; y++) {
+      new_node(x, y);
+  }
+  //auto links
+  for (let ox = 0; ox < 5; ox++) for (oy = 0; oy < 7; oy++) {
+      if (!all_nodes_lookup[ox][oy]) continue;
+      for ([direction, add_x, add_y] of [
+          [0, 0, -1],
+          [1, 1, -1],
+          [2, 1, 0],
+          [3, 1, 1]
+      ]) {
+        let [dx, dy] = [ox+add_x, oy+add_y];
+        if (all_nodes_lookup[dx] && all_nodes_lookup[dx][dy])
+        if ((ox+oy+1)%2 || direction == 0 || direction == 2)
+        link_nodes(ox, oy, dx, dy, direction);
+      }
+  }
+  //special unlinks and relinks
+  for (y of [5, 6]) for (let x = 0; x < 5; x++) {
+      if (all_nodes_lookup[x][y]) {
+          for (let dir = 0; dir < 8; dir++) {
+              if (all_nodes_lookup[x][y].neighbor[dir])
+                  unlink_node(x, y, dir);
+          }
+      }
+  }
+  new_piece("tiger", 0, 0);
+  new_piece("tiger", 4, 0);
+  new_piece("tiger", 0, 4);
+  new_piece("tiger", 4, 4);
+  for (let x = 0; x < 5; x++) for (let y = 0; y < 5; y++)
+  	if (!all_nodes_lookup[x][y].holds)
+    	if (((x-2)*(x-2))+((y-2)*(y-2))>1)
+      		new_piece("man", x, y);
+  main_window_size(5, 5);
+}
+
+function update_piece_position(piece) {
+	if (piece.home) {
+        piece.element.style.left = piece.home.x*3.5+0.5+ "rem";
+        piece.element.style.top = piece.home.y*3.5+0.5+ "rem";
+    } else {
+        //piece.element.style.left = 2*3.5+0.5+ "rem";
+        //piece.element.style.top = 12*3.5+0.5+ "rem";
+        piece.element.style.opacity = 0;
+        setTimeout(function(){piece.element.remove()}, 500);
+    }
+}
+function vis_clear() {
+        for (piece of all_pieces) piece.element.setAttribute("selected", "false");
+        for (node of all_nodes_list)
+            node.element.setAttribute("goable", "false");
+        for (node of all_nodes_list)
+            node.element.style.outlineColor = "#555";
+}
+function log(t) {document.querySelector("#log").innerText += "\n"+t;}
+function count_neighbors(node) {
+	let n = 0;
+    for (x of node.neighbor) if (x) n++;
+    return n;
+}
+let the_turn = "man";
+function declare_winner(winner) {
+	let h2 = document.createElement("h2");
+    h2.innerHTML = {
+    	tiger: tiger_win_message,
+    	man: man_win_message
+    }[winner];
+    h2.style.backgroundColor = colors[winner];
+    document.querySelector("main").style.outlineColor = colors[winner];
+    setTimeout(function(){
+    	document.body.appendChild(h2);
+    	document.querySelector("main").style.outlineOffset = "5rem";
+    document.querySelector("main").style.outlineColor = "#ffffff00";
+    }, 1000);
+}
+function rotate_turn(allow_end = true) {
+	the_turn = {
+    	man: "tiger",
+        tiger: "man"
+    }[the_turn];
+	log(the_turn + " turn");
+    document.querySelector("main").style.outlineColor = colors[the_turn];
+    for (piece of all_pieces) piece.element.style.cursor = piece.team == the_turn ? "pointer" : "default";
+    if (!allow_end) return;
+    //if no hunters, tiger wins
+    let man_moves_left = 0;
+    for (node of all_nodes_list) if (node.holds && node.holds.team == "man")
+    	man_moves_left += valid_moves(node.holds).length;
+    let tiger_moves_left = 0;
+    for (node of all_nodes_list) if (node.holds && node.holds.team == "tiger")
+    	tiger_moves_left += valid_moves(node.holds).length;
+    if (!tiger_moves_left && the_turn == "tiger") {
+    	declare_winner("man");
+    } else if (!man_moves_left && the_turn == "man") {
+    	declare_winner("tiger");
+    }
+}
+
+function valid_moves(piece) {
+	let list = [];
+  for (let dir = 0; dir < 8; dir++) {
+    let looking_node = all_nodes_lookup[piece.home.x][piece.home.y].neighbor[dir];
+    let the_men = [];
+    while (looking_node && looking_node.holds && looking_node.holds.team == "man") {
+      the_men.push(looking_node.holds);
+      looking_node = looking_node.neighbor[dir];
+    }
+    if (!looking_node) continue;
+    if (looking_node.holds) continue;
+    //log(piece.type + ", " + the_men.length);
+    if (piece.team == "man" && the_men.length > 0) continue;
+    if (piece.team == "tiger" && the_men.length && !tiger_capturable_men_lengths.includes(the_men.length)) continue;
+    list.push(looking_node);
+  }
+  return list;
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>&nbsp;</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+  <style id="rem_style"></style>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
+    
+    body {
+      background-color: #001;
+      margin: 0;
+      overflow: hidden;
+      font-family: Jost, sans-serif;
+      --color: black;
+      color: white;
+    }
+    
+    h1, h2 {font-family: Inter, sans-serif;}
+    
+    ::selection {
+      background: var(--color);
+      color: black;
+    }
+    
+    #canvas_container {
+      height: 100vh;
+      width: 60vw;
+      position: relative;
+      cursor: grab;
+    }
+    
+    @keyframes canvas_enter {from {opacity: 0;}}
+    canvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: 2s canvas_enter;
+    }
+    
+    main {
+      font-size: 1.5rem;
+      height: 100vh;
+      width: 40vw;
+      position: absolute;
+      right: 0;
+      top: 0;
+      background-color: #00001140;
+    }
+    
+    @keyframes section_enter {from {opacity: 0; transform: translateY(-50%) translateY(2rem);}}
+    main section {
+      display: none;
+      margin: 0 3rem;
+      animation: 1s section_enter;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    
+    section h1 {
+      font-size: 3rem;
+      margin: 0;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: var(--color);
+      animation: 0.75s section_right_enter;
+    }
+    
+    section h2 {
+      font-weight: bold;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      position: absolute;
+      top: 0.5rem;
+      left: 1.5rem;
+      color: white;
+      text-shadow: 0 0 0.5rem black;
+    }
+    
+    section p {
+      margin: 1rem 0;
+      max-width: 28rem;
+      line-height: 125%;
+    }
+    
+    @keyframes section_right_enter {from {transform: translate(2rem, -2rem);}}
+    section .img {
+      width: 32rem;
+      height: 24rem;
+      margin-bottom: 0;
+      background-color: white;
+      user-select: none;
+      animation: 0.5s section_right_enter;
+      position: relative;
+      background-image: url('https://i.ytimg.com/vi/TBjYxQo2ll8/maxresdefault.jpg');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+      border-radius: 0.25rem;
+    }
+    
+    section .flag {
+      height: 3rem;
+      border-radius: 0.25rem;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      box-shadow: 0 0.25rem 0.5rem #00000044;
+      display: none;
+    }
+    
+    a {
+      color: var(--color);
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    b {
+      color: var(--color);
+      font-weight: bold;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    button {
+      font-size: 1.25rem;
+      font-family: Inter;
+      background-color: var(--color);
+      border: none;
+      width: 10rem;
+      border: none;
+      color: black;
+      text-transform: uppercase;
+      padding: 0.5rem;
+      cursor: pointer;
+      margin: 0;
+      transition: 0.1s;
+      border-radius: 0.25rem;
+    }
+    
+    button:hover {
+      background-color: white;
+    }
+    
+    button:hover::before {content: '! ';}
+    button:hover::after {content: ' !';}
+    
+    #article_view:empty {
+      display: none;
+    }
+    
+    @keyframes article_view_enter {from {bottom: -100vh}}
+    @keyframes article_view_exit {to {bottom: -100vh}}
+    #article_view {
+      width: calc(100vw - 8rem);
+      height: calc(100vh - 8rem);
+      padding: 4rem;
+      animation: 1s article_view_enter;
+      background-color: #222;
+      bottom: 0;
+      right: 0;
+      position: fixed;
+      background-color: #000000d0;
+    }
+    
+    article h1 {
+      color: var(--color);
+      font-size: 3rem;
+      margin: 0;
+    }
+    
+    article h2 {
+      color: #888;
+      font-size: 1.5rem;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    
+    article p {
+      color: white;
+      font-size: 1.5rem;
+      margin: 1rem 0;
+      line-height: 125%;
+      max-width: 32rem;
+      width: calc(calc(100vw - 100vh) - 4rem);
+    }
+    
+    article hr {
+      margin: 1.5rem 0;
+      height: 0.125rem;
+      border: none;
+      background-color: #888;
+      max-width: 32rem;
+      width: calc(calc(100vw - 100vh) - 4rem);
+    }
+    
+    iframe {
+      height: calc(100vh - 8rem);
+      width: calc(calc(100vh - 8rem)*1.333);
+      top: 4rem;
+      right: 4rem;
+      position: absolute;
+      border: none;
+      background-color: #222;
+      border-radius: 0.25rem;
+    }
+    
+    article h4 {
+      position: absolute;
+      bottom: 2rem;
+      right: 4rem;
+      margin: 0;
+      font-weight: bold;
+      font-size: 1rem;
+      color: gray;
+    }
+    
+    section h4 {
+      font-size: 1.125rem;
+      font-weight: normal;
+      color: gray;
+    }
+    
+    article button {
+      bottom: 3rem;
+      position: absolute;
+    }
+    
+    article section {
+      height: calc(100vh - 16rem);
+      width: calc(calc(100vw - 100vh) - 0);
+      overflow-y: scroll;
+    }
+    
+    article h3 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-left: solid 1.5rem var(--color);
+      line-height: 100%;
+      padding-left: 1rem;
+    }
+    
+    #loading {
+      width: 100vw;
+      height: 100vh;
+      line-height: 100vh;
+      text-align: center;
+      font-size: 2rem;
+      user-select: none;
+      background-color: #001;
+      position: fixed;
+      top: 0;
+    }
+    
+    nav {
+      left: 1.5rem;
+      bottom: 1.5rem;
+      position: absolute;
+      --color: #666;
+      user-select: none;
+    }
+    
+    nav a {
+      font-size: 1.125rem;
+      display: block;
+    }
+    
+    @keyframes sources_enter {
+      from {opacity: 0; transform: translate(-50%, -50%) translateY(4rem);}
+    }
+    #sources {
+      width: 50vw;
+      height: 80vh;
+      background-color: #001;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      padding: 2rem;
+      border: solid 0.125rem white;
+      border-radius: 0.25rem;
+      font-size: 1.125rem;
+      animation: 1.5s sources_enter;
+    }
+    #sources ::selection {
+      color: black;
+      background: white;
+    }
+    #sources button {
+      --color: gray;
+      position: absolute;
+      bottom: 2rem;
+      right: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://github.com/processing/p5.js/releases/download/v1.5.0/p5.min.js"></script>
+  <div id="canvas_container"></div>
+  <nav>
+    <a onclick="document.querySelector('#sources').style.display = 'block'">Sources</a>
+  </nav>
+  <div id="sources" style="display: none;">
+    <p>Abc</p>
+    <button onclick="document.querySelector('#sources').style.display = 'none'">Close</button>
+  </div>
+  <main>
+    <section latitude="28" longitude="138" color="2453F6" name="Royal Game of Ur" origin="Mesopotamia" iframe="royalgame.html" image="prev-royalgame.jpg" flag="https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Iraq.svg">
+      <p>The oldest board game in the world. Race your pieces across a path and knock your opponent back to the start.</p>
+      <article>
+        <section>
+          <p>The Royal Game of Ur is a game of luck and strategy. It is the oldest board game with archaeological evidence of its existence. It was spread to Egypt, the Mediterranean, and India.</p>
+          <h3>Gameplay</h3>
+          <p>It takes place on a board of 20 squares. Each player must move all of their tokens along the squares in a path to the other side of the board. The center row is traversed by both players' paths, meaning you can knock an opponent's piece back to the start of their path.</p>
+          <p>Players alternate turns, rolling four two-outcome dice to determine how many spaces their piece may move, between 0 and 4. If your piece lands on a square marked with a flower, you may take another turn. You win once all your pieces have gone through the path and are off on the right side of the board.</p>
+          <h3>Interpretations</h3>
+          <p>Four thousand years ago, games were used as a tool for divination. Tiles were marked with symbols corresponding to signs of the zodiac, and the places your tokens landed told your fortune.</p>
+          <p>Ofshoots of the Royal Game of Ur like Backgammon have since become more popular, both inside and outside Iraq. Reintroducing the game to modern Iraqi society helps people reconnect with their society's history.</p>
+        </section>
+      </article>
+    </section>
+    <section latitude="20" longitude="169" color="FA9611" name="Chaturaji" origin="India" iframe="chaturaji.html" image="prev-chaturaji.jpg" flag="https://upload.wikimedia.org/wikipedia/en/4/41/Flag_of_India.svg" cpuopponent>
+      <p>The hectic 4-player Indian predecessor to chess, featuring elephants and boats.</p>
+      <article>
+        <section>
+          <p>Chaturaji (4-player) and its sibling game Chaturanga (2-player) were developed around the 400s under the Gupta Empire in India. Because there are three other opponents to keep track of in Chaturaji, you are readily overwhelmed on all sides by enemy pieces.</p>
+          <h3>Gameplay</h3>
+          <p>Gameplay resembles chess, with players alternating turns, and each piece type moving in a unique fashion.</p>
+          <p>Rooks are instead elephants [native name]. but they behave the same. Bishops are instead boats [native name], and they hop two spaces diagonally instead of sliding.</p>
+          <h3>Interpretations</h3>
+          <p>These games were used to recount stories of war, as well as demonstrate leaders' strategic prowess. Chaturanga/Chaturaji were integrated into the process of becoming an adept leader. The pieces were also designed to emulate the actual behaviors and tactics of Indian military practices of the time, which makes the gameplay more expressive and narrative.</p>
+          <h3>Evolution</h3>
+          <p>Modern chess has its origins in Chaturanga and Chaturaji, which themselves were inspired by the earlier game Ashtapada, which is where the 8x8 board originated.</p>
+          <p>When the game was introduced to Europe, the advisor, chariot, and elephant were morphed into the queen, rook, and bishop to better suit a European cultural context. A few move rules were also changed. The European-interpreted version of chess is now the international standard.</p>
+        </section>
+      </article>
+    </section>
+    <section latitude="-36" longitude="264" color="C035F7" name="Mū Tōrere" origin="Māori" iframe="mutorere.html" image="prev-mutorere.jpg" flag="https://upload.wikimedia.org/wikipedia/commons/3/30/Tino_Rangatiratanga_Maori_sovereignty_movement_flag.svg" cpuopponent>
+      <p>A strategy game played on an octagon. Because the board is so small, experts can anticipate up to 40 moves into the future.</p>
+      <article>
+        <section>
+        <p>Mū Tōrere is a deceptively simple abstract strategy game developed by the Māori of New Zealand. There are only 9 spots, and each player only has 4 tokens. Pieces always move to an adjacent empty space.</p>
+        <h3>Gameplay</h3>
+        <p>Players alternate turns, moving one of their pieces either along the other ring or to/from the center spot. If moving to the center, you must do so with a piece that neighbors an opponent piece. The aim of the game is to leave the opponent with no legal moves.</p>
+        <p>Because there is only one empty space, the real goal is to move that empty space and surround it with your own pieces so that the enemy can't reach it.</p>
+        <h3>Advanced Strategy</h3>
+        <p>This game is incredibly tiny. A little combinatoric math reveals that there are only 86 possible unique game states. Because there are so few, people and computers have already determined the best response to all possible game states. This makes the game easier in the sense that there are fewer moving parts to consider, but harder in the sense that expert players learn to see many dozen moves into the future. European missionaries and colonizers lost a lot of bets over Mū Tōrere because the native Māori were so good at the game.</p>
+        </section>
+      </article>
+    </section>
+    <section latitude="19" longitude="294" color="f0cb34" name="Kōnane" origin="Hawai'i" iframe="konane.html" image="prev-konane.jpg" flag="https://upload.wikimedia.org/wikipedia/commons/e/ef/Flag_of_Hawaii.svg" cpuopponent>
+      <p>Similar to checkers, but all pieces are mixed on the board at the start, and all moves must capture.</p>
+      <article>
+        <section>
+          <p>A 2-player Hawaiian checkers-like game. Some matches may last days, and the dimensions of the board are variable.</p>
+          <h3>Gameplay</h3>
+          <p>Kōnane boards (papamū) come in several sizes, commonly 9x13, 14x17, or 13x20. These boards may be a reused woven mat, a dedicated stone slab with carved holes, or even built into the surface of a home.</p>
+          <p>The board begins in a dense alternating grid of white and black pieces, with two empty spaces (lua) in the center. With black going first, each player alternates turns. You can move (holo) one piece to an adjacent empty spot, or you can capture ('ai) an opponent piece by hopping over it orthogonally. Multiple-hop moves (kaholo) are permitted if they all go in the same direction.</p>
+          <h3>Players</h3>
+          <p>Kōnane was common among older men, especially Hawaiian chiefs wanting to demonstrate their military strategic prowess; being skilled at Kōnane was another expectation for a great chief. Players and viewers would bet on matches with their money, jewelry, clothes, land, and sometimes lives! The game also worked its way into Hawaiian storytelling; the saga of the great chief Lonoikamakahiki includes him killing his wife during a game of Kōnane.</p>
+          <p>Christian missionaries suppressed Kōnane (and a lot of other Hawaiian practices), but it has recently become popular again.</p>
+          </p>
+        </section>
+      </article>
+    </section>
+    <!--<section latitude="20" longitude="350" color="D649A4" name="Patolli" origin="Mesoamerica" iframe="" image="" flag="">
+      <p>Played by the Teotihuacanos, Toltecs, and Aztecs.</p>
+      <article>
+      </article>
+    </section>-->
+    <section latitude="4" longitude="193" color="C72045" name="Rimau-Rimau" origin="Malaysia" iframe="rimaurimau.html" image="prev-rimaurimau.webp" flag="https://upload.wikimedia.org/wikipedia/commons/6/66/Flag_of_Malaysia.svg">
+      <p>An asymmetric abstract strategy game about humans (orang) hunting tigers (rimau). Also includes 3 other related games.</p>
+      <article>
+        <section>
+          <p>An asymmetric abstract strategy game about humans (orang) hunting tigers (rimau).</p>
+          <p>It descends from the game Alquerque, which constitutes an entire family including Checkers and many similar games about moving and hopping, both symmetric and asymmetric.</p>
+          <h3>Gameplay</h3>
+          <p>The game starts with one tiger and nine hunters. Players alternate turns. Both players can move their piece to an adjacent spot that&#39;s connected by a line. Tigers can also hop across a hunter to an empty space, capturing the hunter. The hunters have no way to capture the tiger.</p>
+          <p>The goal for the tiger is to capture all the hunters. The goal for the hunters is to trap the tiger such that it has no legal moves.</p>
+          <p>The hunter role requires a lot of strategy because trapping a tiger is really hard in an open board. In general, the tiger is most restricted at the top and bottom ends of the board.</p>
+          <p>Variants of Rimau-Rimau change the number of tigers (1 or 2), as well as allowing the tiger to jump over several hunters in a single turn (all in a straight line). These variant settings can be set before the game starts.</p>
+          <h3>Alquerque Game Family</h3>
+          <p>Rimau-Rimau is a descendent of Alquerque, which is the common ancestor for checkers, its variants, and many similar games (even singleplayer games like peg solitaire). Alquerque has its origins in the Middle East.</p>
+          <p>Alquerque games can be symmetric or asymmetric. Symmetric games give both players an equal starting position, and both players can make the same moves. Asymmetric Alquerque games are generally called hunt games, where one player has an advantage of more pieces but a disadvantage of not being able to capture. Such asymmetric games may seem unfair, but experienced players generally have an equal chance of winning as either role.</p>
+          <h3>Evolution and Reinterpretation</h3>
+          <p>In Rimau-Rimau, the many-but-weak are the hunters, and the few-but-strong are the tigers, which are native to Malaysia; the game reflects the environment it was created in. Other variations of Alquerque will implement different animals, like jaguars, pumas, dogs, sheep, and goats.</p>
+          <p>Alquerque games generally use a 5x5 board, where pieces can also move diagonally, but different variants will use different board shapes, including stars, rhombuses, loops, triangles, or concentric circles. Variants will also connect their nodes in different ways, leading to more nuanced and strategic gampelay.</p>
+          <p>The play window on the right incorporates a few asymmetric Alquerque games; in addition to the Malay Rimau-Rimau (tigers vs. hunters), it includes the Brazilian Adugo (jaguars vs. dogs), the Inca Komikan (pumas vs. sheep), and the Nepali Bagh-Chal (tigers vs. goats).</p>
+        </section>
+      </article>
+    </section>
+    <section latitude="15" longitude="106" color="28D742" name="Mancala" origin="Africa and Asia" iframe="mancala.html" image="prev-mancala.jpg" flag="">
+      <p>A family of board games where players drop pebbles into holes. The goal is to collect as many pebbles as possible in your home hole, or "mancala".</p>
+      <article>
+        <section>
+          <p>Mancala is a family of games, theorized to have originated in Ethiopia, but with evidence of its existence in lots of places. Out of east Africa, a variant called Bao spread to the Middle East, India, the Maldives, and Malaysia. The west African variant of Omweso spread to the Americas via the Atlantic slave trade. These variants vary in board size and minor rules, but they all share essentially the same gameplay (even though the rules long went undocumented!).</p>
+          <h3>Gameplay</h3>
+          <p>Mancala rules vary regionally, but in general, the aim of the game is to move the seeds from the small pits into the player's store, the large pocket on their right.</p>
+          <p>Players alternate turns. On each turn, a player picks a pit on their side with seeds in it. They pick up the seeds and drop one in each pit, moving to the right. If they get to the end of the board, they continue leftwards on the opposite side.</p>
+          <h3>Players</h3>
+          <p>Some cultures impose gendered rules on who can or can't play. In Malaysia, Mancala is only for women. In Senegal, boys have to wait until adulthood before playing. In Mali, children shouldn't play at all. These rules are the result of regional spiritual interpretation of Mancala. The Dahomey of Benin incorporate playing Mancala into their rite of passage for girls first having a period. In Côte D'Ivoire, who you choose to play against is believed to influence the sex of an upcoming child.</p>
+          <h3>Spirituality</h3>
+          <p>Spirits are believed to play Mancala too, which is why many cultures choose to leave boards out at night for them (like milk and cookies for Santa). The Baule people of West Africa even use spiritually-assisted games of Mancala as a means of selecting a new chief.</p>
+          <p>Because of the significant variation of this game and the number of cultures it has been spread to, some consider Mancala the most widely played board game.</p>
+        </section>
+      </article>
+    </section>
+    <section latitude="55" longitude="116" color="31D0E8" name="Tafl" origin="Scandinavia" iframe="tafl.html" image="prev-tafl.webp" flag="https://upload.wikimedia.org/wikipedia/commons/d/d9/Flag_of_Norway.svg" cpuopponent>
+      <p>A family of asymmetric, chess-like games about protecting a king from invaders. Tafl's rules are reconstructed from translations of variant games and archaeological findings.</p>
+      <article>
+        <section>
+          <p>Tafl is a family of asymmetric chess-like games played by groups in northern Europe like the Vikings of Scandinavia, the Saami, and the Welsh. Variants of the game differ in the initial setup of the board, but they all feature an army of black pieces trying to capture the white king, while the white king tries to escape to the corners.</p>
+          <h3>Gameplay</h3>
+          <p>Like chess, players alternate making moves, and one piece is moved during a turn. Pieces slide in the four cardinal directions. Pieces do not directly capture opponent pieces; instead, a piece is captured when surrounded on either side by opponents.</p>
+          <p>In all setups, the black team is already surrounding the white team. The black team has no king, and their only mission is to destroy the white king. The white team can win by navigating its king into a corner of the board.</p>
+          <p>The central square where the king starts is called the "castle", and some Tafl variants implement special rules for capture or king safety around the castle. These rules are not implemented here.</p>
+          <h3>Interpretation</h3>
+          <p>As a game of war, the narrative interpretation often referenced real-world war; in the past, the two teams have been labeled Swedes (white team, defenders) and Russians (black team, attackers).</p>
+          <h3>Reference</h3>
+          <p>Tafl games also have a literary presence in old Scandinavian sagas, which provided evidence to reconstruct more obscure variants of Tafl. This reconstruction has been difficult; for a long time, a Saami variant was the only documented Tafl game. Rulesets are still debated because of conflicting records and missing evidence.</p>
+        </section>
+      </article>
+    </section>
+  </main>
+  <div id="loading">loading assets...</div>
+  <div id="article_view"></div>
+  <script src="script.js"></script>
+</body>
+</html>

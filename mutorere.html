@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    	body {
+        	background-color: #eed;
+          margin: 0;
+          font-family: Inter, sans-serif;
+        }
+        
+        main {
+          width: 29rem;
+          height: 29rem;
+          position: fixed;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          background-color: #e6e6cd;
+          border-radius: 100%;
+          padding: 4rem;
+        }
+        
+        button {
+        	position: fixed;
+            color: white;
+            display: block;
+            border: none;
+            outline: solid 0.125rem black;
+            background-color: white;
+            text-align: center;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 2rem;
+            transition: background-color 0.1s, outline-color 0.1s;
+            font-family: inherit;
+            font-size: 2rem;
+            box-shadow: 0 0 1rem #86865d, inset 0.25rem 0.25rem #ffffff44, inset -0.25rem -0.25rem #00000044;
+        }
+        
+        button[turn="yes"] {
+            cursor: pointer;
+        }
+        
+        @keyframes h3_enter {
+          from {opacity: 0; transform: translate(-50%, -50%) translateY(1rem);}
+        }
+        h3 {
+          position: fixed;
+          display: block;
+          margin: 0;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          padding: 3rem 6rem;
+          font-size: 2rem;
+          border-radius: 2rem;
+          animation: 1s h3_enter;
+          box-shadow: 0 0 1rem #44331140;
+          color: #222;
+        }
+    </style>
+</head>
+<body>
+<main></main>
+<script>
+let white = 0;
+let black = 1;
+let nodes = [];
+//0-1, 1-2, 2-3, 3-4, 4-5, 5-6, 6-7, 7-0
+//8-*
+let buttons = [];
+
+let teams = 2; //number of teams available. breaks at  lololol
+let team_colors = ["#444444","#dddddd","#888888"]; //chosen in ui. EVENTUALLY TURN THESE TO IMAGE LINKS so its not neon lol
+let team_text = ["☼","☼","C","D","E","F","G"] //^^^
+let team_colors_text = ["white", "black", "black"];
+
+let ai_teams = [1];
+
+let agon = 8; //number of sides. nodes.length = agon+1. 6~12
+//must be a multiple of the number of teams
+for (let t = 0; t < teams; t++)
+	for (let i = 0; i < agon/teams; i++)
+    	nodes.push(t);
+nodes.push(null);
+
+function neighbors(n, t = turn) {
+	if (n == agon) {
+    	let list = [];
+        for (let i = 0; i < agon; i++) list.push(i);
+        return list;
+    }
+	let neigh = [(n+1)%agon, (n+agon-1)%agon];
+    //add 8 to neigh if another neighbor is enemy
+    //if ((nodes[neigh[0]]!=turn&&nodes[neigh[0]]!=null) || (nodes[neigh[1]]!=turn&&nodes[neigh[1]]!=null))
+    if ((nodes[neigh[0]]==(turn+1)%teams) || (nodes[neigh[1]]==(turn+1)%teams))
+    	neigh.push(agon);
+    return neigh;
+}
+
+let scale = 200;
+for (let i = 0; i < agon+1; i++) {
+  let button = document.createElement("button");
+  buttons.push(button);
+  document.querySelector("main").appendChild(button);
+  button.setAttribute("onclick", "click_spot("+i+")");
+}
+let angle = Math.PI/agon;
+function do_button_positions() {
+  //angle += 0.001;
+  for (let i = 0; i < agon+1; i++) {
+    if (i < agon) {
+      // set position to cis(i * 2pi / 8)
+      buttons[i].style.left = Math.round(scale * (1+Math.sin(i*2*Math.PI/agon+angle))) +64+ "px";
+      buttons[i].style.top = Math.round(scale*(1+Math.cos(i*2*Math.PI/agon+angle))) +64+ "px";
+    } else {
+      buttons[i].style.left = Math.round(scale) +64+ "px";
+      buttons[i].style.top = Math.round(scale) +64+ "px";
+  	}
+  }
+}
+function visual_update() { //for text
+	let any_available = false;
+    for (let i = 0; i < agon+1; i++) {
+        buttons[i].innerText = nodes[i]==null?"":(team_text[nodes[i]]);
+        buttons[i].style.backgroundColor = nodes[i]==null?"#e6e6cd":(team_colors[nodes[i]]);
+        buttons[i].style.color = nodes[i]==null?"#eed":(team_colors_text[nodes[i]]);
+        buttons[i].style.outlineColor = nodes[i]==null?"#e6e6cd":(team_colors[nodes[i]]);
+        buttons[i].style.boxShadow = nodes[i]==null?"0 0 1rem #86865d":"0 0 1rem #86865d, inset 0.375rem 0.375rem #ffffff44, inset -0.375rem -0.375rem #00000044";
+        //turn means it is our piece, AND its movable
+        buttons[i].style.cursor = "default";
+        if (nodes[i] == turn)
+        for (neigh of neighbors(i))
+        if (nodes[neigh] == null) {
+        	buttons[i].style.outlineColor = team_colors_text[nodes[i]];
+        	buttons[i].style.cursor = "pointer";
+            any_available = true;
+        }
+    }
+    if (!any_available) {
+      let h3 = document.createElement("h3");
+      h3.innerText = "The "+["white", "black"][turn]+" team wins!";
+      h3.style.backgroundColor = team_colors[(turn+1)%2];
+      h3.style.color = team_colors_text[(turn+1)%2];
+      document.body.appendChild(h3);
+      document.innerHTML += " ";
+    }
+}
+
+let turn = 0;
+function rotate_turn() {
+	turn = (turn+1)%teams;
+}
+
+function click_spot(n, cpu_after = true) {
+	if (nodes[n] != turn) return false;
+    let bor = neighbors(n);
+    for (neigh of bor) if (nodes[neigh] == null) {
+    	//swap n and neigh
+        nodes[neigh] = turn;
+        nodes[n] = null;
+        rotate_turn();
+        visual_update();
+        if (ai_teams.includes(turn)) setTimeout(computer_turn, 1000);
+        return true;
+    }
+    return false;
+}
+
+function computer_turn() {
+	let x = [];
+    for (let i = 0; i < agon+1; i++) x.push(i);
+	x = x.sort((a,b)=>(Math.random()>0.5?1:-1));
+    for (i of x) if (click_spot(i, false)) return;
+}
+
+do_button_positions();
+visual_update();
+
+</script>
+</body>
+</html>

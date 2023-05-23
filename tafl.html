@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+
+:root {
+	--black: #292929;
+	--white: #EDEDED;
+	--gray: #555;
+	--color: #24a5ff;
+	--color: #24cc46;
+	
+	--square-dark: #8ca2ad;
+	--square-light: #dee3e6;
+	--square-red: #ED8C7A;
+	--square-dark-highlight: #a2c166;
+	--square-light-highlight: #d2e787;
+	
+	--square-dark: #B58763;
+	--square-light: #F0DAB5;
+	--square-red: #ED8C7B;
+	--square-dark-highlight: #C0A765;
+	--square-light-highlight: #FBF7B7;
+}
+
+body {
+	user-select: none;
+	margin: 0;
+	background-color: var(--black);
+	font-family: Inter, sans-serif;
+	color: var(--white);
+	overflow-x: hidden;
+}
+
+/* game display */
+
+main {
+	max-height: 94vh;
+	margin-top: 3vh;
+	position: absolute;
+	width: 100%;
+	top: 50%;
+	transform: translateY(-50%) translateY(-3vh);
+}
+
+table {
+	border-collapse: collapse;
+	transition: transform 1s;
+	margin: auto;
+}
+
+::selection {
+	background: var(--white);
+	color: var(--black);
+}
+
+td {
+	width: 5rem;
+	height: 5rem;
+	text-align: center;
+	font-size: 4rem;
+	background-color: var(--square);
+	padding: 0;
+}
+
+td[parity="0"] {
+	--square: var(--square-light);
+	--square-highlight: var(--square-light-highlight);
+}
+
+td[parity="1"] {
+	--square: var(--square-dark);
+	--square-highlight: var(--square-dark-highlight);
+}
+
+td img {
+	width: 5rem;
+	height: 5rem;
+	margin: 0;
+	display: block;
+}
+
+td[highlight="origin"] {
+	background-color: var(--square-red);
+}
+
+@keyframes destination_animation {from {
+	background-color: var(--square-highlight);
+} 50% {
+	background-color: var(--square);
+} to {
+	background-color: var(--square-highlight);
+}}
+
+td[highlight="destination"] {
+	animation: 0.5s destination_animation infinite;
+}
+td[highlight="just_happened"], .editor td:hover {
+	background-color: var(--square-highlight);
+}
+
+td[highlight="owned"]:hover, td[highlight="origin"]:hover, td[highlight="destination"]:hover {
+	cursor: pointer;
+}
+
+td[fog="true"] {
+	opacity: 0.125;
+}
+td[fog="true"] img {
+	display: none;
+}
+
+td[oob="true"] {
+	opacity: 0;
+}
+
+td.coords {
+	font-size: 1.25rem;
+	width: 2rem;
+	height: 2rem;
+	color: var(--gray);
+}
+
+a, b {
+	color: var(--color);
+	text-decoration: none;
+	font-weight: normal;
+}
+
+a:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+button {
+	background-color: var(--color);
+	color: var(--black);
+	border: none;
+	font-size: 1rem;
+	font-family: inherit;
+	width: 8rem;
+	padding: 0.5rem 0;
+	cursor: pointer;
+	margin: 1rem 0;
+	margin-left: calc(100% - 8rem);
+	display: block;
+}
+
+button:hover {
+	background-color: var(--white);
+}
+
+button:hover::after {content: ' ->';}
+button:hover::before {content: '-> ';}
+
+/* the main menu article */
+
+#menu {
+	width: 48rem;
+	margin: 0 auto;
+	user-select: text;
+	padding-bottom: 6rem;
+	font-size: 1.125rem;
+	line-height: 1.5rem;
+}
+
+#menu h1 {
+	font-weight: normal;
+	font-size: 2rem;
+	width: 32rem;
+	margin: 4rem auto;
+	text-align: center;
+}
+
+#menu p {
+	width: 32rem;
+	margin: 1rem auto;
+}
+
+#menu .card {
+	width: calc(50% - 0.5rem);
+	height: 10rem;
+	border: solid 0.125rem var(--gray);
+	border-bottom-width: 1rem;
+	display: inline-block;
+	margin: 1rem 0;
+	padding: 1rem;
+	box-sizing: border-box;
+	color: inherit;
+}
+
+#menu .card:hover {
+	border-color: var(--color);
+	text-decoration: none;
+}
+
+#menu .card h2 {
+	font-weight: normal;
+	margin: 0;
+	margin-bottom: 0.5rem;
+	font-size: 1.25rem;
+	color: var(--color);
+}
+
+#menu .card:hover h2::after {content: ' ->';}
+
+#menu button {
+	background-color: var(--black);
+	color: var(--white);
+}
+
+#menu button:hover {
+	background-color: var(--color);
+	color: var(--black);
+}
+
+article input {
+	background-color: var(--black);
+	color: var(--white);
+	font-family: inherit;
+	border: none;
+	padding: 0.5rem 0;
+	font-size: 1rem;
+	text-align: center;
+	margin: 1rem 0;
+	margin-bottom: 0;
+	border: solid 0.125rem var(--black);
+	width: calc(100% - 0.25rem);
+}
+
+article input:focus {
+	outline: none;
+	border-color: var(--gray);
+}
+
+/* corner info during gameplay */
+
+#sidebar {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	padding: 1rem;
+	background-color: var(--black);
+	font-size: 1.125rem;
+}
+
+#sidebar p {
+	margin: 0;
+	margin-top: 0.5rem;
+}
+
+/* modal popup*/
+
+#modal {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 28rem;
+	padding: 1rem 2rem;
+	user-select: text;
+	border: solid 0.125rem var(--gray);
+	background-color: var(--black);
+	backdrop-filter: blur(1rem);
+}
+
+#modal:empty {display: none;}
+
+#modal p {
+	width: 90%;
+}
+
+#modal h1 {
+	font-weight: normal;
+	margin: 1rem 0;
+	color: var(--color);
+	
+	/* margin: -1rem -2rem;
+	background-color: var(--color);
+	padding: 1rem;
+	color: var(--white);
+	margin-bottom: 2rem;
+	text-align: center; */
+}
+
+#modal div {
+	margin: 0.25rem 0;
+	accent-color: var(--color);
+}
+
+#modal label {
+	padding-left: 1rem;
+}
+
+#modal aside {
+	float: right;
+	color: var(--gray);
+	text-transform: uppercase;
+	margin-top: -1.5rem;
+}
+
+hr {
+	border: none;
+	margin: 1rem 0;
+	height: 0.125rem;
+	background-color: var(--gray);
+	width: 50%;
+}
+
+select {
+	margin: 0.25rem 0;
+	background-color: inherit;
+	border: none;
+	font-family: inherit;
+	color: inherit;
+	font-size: inherit;
+	height: 1.5rem;
+}
+
+select:focus {
+	color: var(--color);
+	outline: none;
+}
+
+option {
+	color: var(--white);
+}
+
+tbody, td img, td.coords {
+	transition: 1s transform;
+}
+
+#modal, .card, button, pre code {border-radius: 0.5rem !important; overflow: hidden;}
+button, .card {transition: 0.1s;}
+
+
+[corner="true"] {
+  outline: solid 0.125rem white;
+}
+
+#games_catalogue {
+  text-align: center;
+  margin: 8rem;
+}
+
+#games_catalogue div {
+  display: inline-block;
+  margin: 4rem auto;
+  width: 18rem;
+  height: 18rem;
+  border: solid 0.125rem #444;
+  padding: 1rem;
+  margin: 1rem;
+  cursor: pointer;
+  background-color: #333;
+  transition: 0.2s;
+}
+
+#games_catalogue div:hover {
+  background-color: #444;
+}
+
+#games_catalogue div img {
+  width: 14rem;
+  height: 14rem;
+}
+
+#games_catalogue div p {
+  font-size: 1.25rem;
+}
+
+@keyframes games_catalogue_out {
+  to {opacity: 0; transform: translateY(1rem);}
+}
+  </style>
+  <title id="title">Chess Sandbox</title>
+  <style id="rotation_css"></style>
+  <style id="tafl_resize_css"></style> <!-- set (td, td img)(width, height) to floor(100/width)vh -->
+</head>
+<body>
+  <div id="modal" style="display: none;"></div>
+  <main><table id="display_table"></table></main> <!-- game board -->
+  <div id="sidebar">
+    <p id="current_turn_display"></p>
+  </div>
+  <script>
+  let empty_cell = 1;
+let oob_cell = 0; //important that this casts to false
+
+let board = [];
+let board_history = []; //every past value of board
+
+let teams;
+let team_rotations = [];
+let turn = 0; //whose turn it currently is
+let available_moves; //available moves to current turn
+let selection = null; //select piece before acting on it. [row, col]
+let just_happened_destination = null; //the last move that just happened. [row, col]
+let just_happened_origin = null; //the last move that just happened. [row, col]
+let ai_teams = [];
+
+let coords_enabled = false;
+let rotation_enabled = true;
+let fog_enabled = false;
+
+let rules_name = "Normal rules"; //name displayed
+let rules_description = ""; //rules
+let forbid_self_check = true;
+let team_names = "White Black Green Red Yellow".split(" ");
+let ai_type = "minimax";
+
+function start_game() {
+	sfx("sfxtake.mp3");
+	//read and remove modal
+	turn = team_names.indexOf(document.getElementById("turn_select").value);
+	ai_type = document.getElementById("ai_select").value;
+	for (let i = 0; i < teams; i++) if (document.getElementById("ai_checkbox_"+i).checked) {
+		ai_teams.push(i);
+		team_names[i] += " (CPU)";
+	}
+	coords_enabled = document.getElementById("coords_checkbox").checked;
+	rotation_enabled = document.getElementById("rotation_checkbox").checked;
+	fog_enabled = document.getElementById("fog_checkbox").checked;
+	document.getElementById("modal").remove();
+	//dereference anything sus in the board
+	board = copy_board(board);
+	//fill in the board to ensure it's rectangular
+	let max_row_length = 0;
+	for (row of board) max_row_length = Math.max(max_row_length, row.length);
+	for (row of board) while (row.length < max_row_length) row.push(oob_cell);
+	for (row of board) for (cell of row) if (cell.type) cell.state = 0;
+	//create board html
+	{
+		let html = "";
+		for (let row_count = 0; row_count < board.length; row_count++) {
+			let row = board[row_count];
+			html += '<tr>';
+			if (coords_enabled) html += '<td class="coords">'+(board.length-row_count)+'</td>';
+			for (let col_count = 0; col_count < row.length; col_count++) {
+				let cell = row[col_count];
+        let corner = (col_count == 0 || col_count == row.length-1) && (row_count == board.length-1 || row_count == 0);
+				html += '<td id="cell_'+row_count+'_'+col_count+'" onmousedown="click_cell('+row_count+', '+col_count+')" parity="'+((row_count+col_count)%2)+'" corner="'+corner+'">';
+				//html += '<td id="cell_'+row_count+'_'+col_count+'" onmousedown="click_cell('+row_count+', '+col_count+')" onmouseup="click_cell('+row_count+', '+col_count+')" parity="'+((row_count+col_count)%2)+'">';
+				html += '</td>';
+			}
+			html += '</tr>';
+		}
+		if (coords_enabled) {
+			html += '<tr><td class="coords"></td>';
+			for (let col_count = 0; col_count < board[0].length; col_count++) {
+				if (coords_enabled) html += '<td class="coords">'+('abcdefghijklmnopqrstuvwxyz').charAt(col_count)+'</td>';
+			}
+			html += '</tr>';
+		}
+		document.getElementById("display_table").innerHTML = html;
+		//any oob cells need to be made white
+		for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) {
+			if (board[row_count][col_count] == oob_cell)
+				get_celement(row_count, col_count).setAttribute("oob", "true");
+		}
+	}
+	board_history = [board];
+  //css the sizes things
+  let vh_size = Math.floor(90/board.length);
+  document.getElementById("tafl_resize_css").innerHTML = "td,td img{width:"+vh_size+"vh;height:"+vh_size+"vh;}";
+  document.getElementById("games_catalogue").remove();
+	//determine team rotations
+	for (let t = 0; t < teams; t++) for (row of board) for (cell of row) if (cell.team == t) team_rotations[t] = cell.direction;
+	for (let t = 0; t < teams; t++) for (row of board) for (cell of row) if (cell.team == t && cell.type.royal) team_rotations[t] = cell.direction;
+	for (let t = 0; t < teams; t++) if (!ai_teams.includes(t)) set_rotation(team_rotations[t]);
+	//start the round
+	do_turn(false);
+}
+
+function get_celement(row_count, col_count) {
+	return document.getElementById("cell_"+row_count+"_"+col_count);
+}
+
+function update_display_all() {
+	for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) update_display(row_count, col_count);
+}
+function update_display(row_count, col_count) { //only updates the character inside! square highlighting is handled by highlight_appropriate_squares
+	if (board[row_count][col_count]) {
+		let cell = board[row_count][col_count];
+		//get_celement(row_count, col_count).innerHTML = cell.type==undefined ? '' : '<span team="'+cell.team+'">'+cell.type.letter+'</span>';
+		get_celement(row_count, col_count).innerHTML = cell.type==undefined ? '' : '<img draggable="false" src="'+cell.type.svg[cell.team]+'">';
+		get_celement(row_count, col_count).setAttribute("title", (cell.type==undefined?"":team_names[cell.team].toLowerCase()+" "+cell.type.name+" on ")+square_name(row_count, col_count));
+	}
+}
+function clear_fog() {
+	for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) {
+			get_celement(row_count, col_count).setAttribute("fog", "false");
+	}
+}
+function set_fog() {
+	//the turn we use should be whichever person was last not ai
+	let turn_to_use = turn;
+	for (let t = 0; t < teams; t++) {
+		if (!ai_teams.includes(turn_to_use)) break;
+		turn_to_use--;
+		if (turn_to_use < 0) turn_to_use += teams;
+	}
+	for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) {
+		let should_fog = "true";
+		if (board[row_count][col_count].team == turn_to_use) should_fog = "false";
+		for (m of find_legal_moves(turn_to_use, board)) if (m.destination[0] == row_count && m.destination[1] == col_count) should_fog = "false";
+		get_celement(row_count, col_count).setAttribute("fog", should_fog);
+	}
+}
+
+function royalty_threatened(board, royal_team) {
+	for (let team = 0; team < teams; team++) {
+		if (team != royal_team) if (find_moves(team, board, true, royal_team)) return true;
+	}
+	return false;
+}
+function royalty_threatened_by(board, attacking_team) {
+	for (let team = 0; team < teams; team++) {
+		if (team != attacking_team) if (find_moves(attacking_team, board, true, team)) return true;
+	}
+	return false;
+}
+
+function find_legal_moves(turn, board) {
+	let m = find_moves(turn, board);
+	if (!forbid_self_check) return m;
+	for (let i = 0; i < m.length; i++) {
+		let move = m[i];
+		let illegal = royalty_threatened(move.result, turn);
+		if (illegal) {
+			m.splice(i, 1);
+			i--;
+		}
+	}
+	return m;
+}
+
+function rotate(v, direction) {
+	let dx = v[0];
+	let dy = v[1];
+	return [[-dy, dx, dy, -dx][direction], [dx, -dy, -dx, dy][direction]];
+}
+
+//TODO: restructure this so theres a helper function to find moves for one specific piece. it still has to somehow overload with those royal threat parameters
+
+//finds pseudo legal moves from this function
+function find_moves(turn, board, checking_royal_threat = false, royal_team) {
+	//finds the valid moves for player #turn to make
+	//each move object is returned with these attributes
+	// - source coordinates (piece to activate to cause this)
+	// - destination coordinates (space to click to cause this to happen)
+	// - result (a new board array that will become the state if this is picked. all new references (except to piece types))
+	let moves_list = [];
+	for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) {
+		let cell = board[row_count][col_count];
+		//if (cell == empty_cell || cell == oob_cell) continue;
+		if (cell.team == turn) {
+			//main loop: for each move definition
+			for (move of cell.type.moves) {
+				//preliminary checks for conditions for this move
+				if (move.void_condition != undefined) {
+					let condition_list = typeof(move.void_condition[0])=="number" ? [move.void_condition] : move.void_condition;
+					let should_continue = false;
+					for (cond of condition_list) {
+						let [d_row, d_col] = rotate(cond, cell.direction);
+						if (in_bounds(board, row_count+d_row, col_count+d_col)) should_continue = true;
+					}
+					if (should_continue) continue;
+				}
+				if (move.empty_condition != undefined) {
+					let condition_list = typeof(move.empty_condition[0])=="number" ? [move.empty_condition] : move.empty_condition;
+					let should_continue = false;
+					for (cond of condition_list) {
+						let [d_row, d_col] = rotate(cond, cell.direction);
+						if (!in_bounds(board, row_count+d_row, col_count+d_col) || board[row_count+d_row][col_count+d_col] != empty_cell) should_continue = true;
+					}
+					if (should_continue) continue;
+				}
+				if (move.mandatory_collateral != undefined) {
+					let [collateral_row, collateral_col] = rotate(move.mandatory_collateral, cell.direction);
+					collateral_row += row_count;
+					collateral_col += col_count;
+					if (!in_bounds(board, collateral_row, collateral_col) || board[collateral_row][collateral_col] == empty_cell) continue;
+					let collateral_cell = board[collateral_row][collateral_col];
+					if (collateral_cell.team == turn) continue;;
+					if (move.mandatory_collateral[2] != undefined && move.mandatory_collateral[2] != collateral_cell.type.name) continue;
+					if (move.mandatory_collateral[3] != undefined && move.mandatory_collateral[3] != collateral_cell.state) continue;
+					if (collateral_cell.type.royal && checking_royal_threat) return true;
+				}
+				if (move.required_state != undefined && cell.state != move.required_state) continue;
+				let [d_row, d_col] = rotate(move.motion, cell.direction);
+				let current_row = row_count + d_row;
+				let current_col = col_count + d_col;
+				//special move types
+				if (move.type == "castle") {
+					//scan by interval (d_row, d_col). if this is empty until an X of our color, then we can do a silly swap
+					let walks = 0;
+					while (in_bounds(board, current_row, current_col) && board[current_row][current_col] == empty_cell) {
+						current_row += d_row;
+						current_col += d_col;
+						walks++;
+					}
+					if (walks < 1) continue;
+					if (in_bounds(board, current_row, current_col) && board[current_row][current_col].team == turn && board[current_row][current_col].type.name == move.friend) {
+						//extra condition check: does friend also meet requirements
+						if (move.required_state != undefined && board[current_row][current_col].state != move.required_state) continue;
+						let future_board = copy_board(board);
+						if (move.new_state != undefined) future_board[row_count][col_count].state = move.new_state;
+						future_board[row_count+d_row][col_count+d_col] = future_board[current_row][current_col];
+						future_board[current_row][current_col] = empty_cell;
+						if (move.new_state != undefined) future_board[row_count][col_count].state = move.new_state;
+						future_board[row_count+2*d_row][col_count+2*d_col] = future_board[row_count][col_count];
+						future_board[row_count][col_count] = empty_cell;
+						moves_list.push({origin: [row_count, col_count], destination: [row_count+2*d_row, col_count+2*d_col], result: future_board});
+					}
+					continue;
+				}
+				//all other move types use same rules
+				//calculate the possible continuations for this piece in this move
+				//check conditions to see if the cell can actually move
+				let slide_count = 1;
+				while (in_bounds(board, current_row, current_col)) {
+					if (move.limit != undefined && slide_count > move.limit) break;
+					if (board[current_row][current_col] == empty_cell) { //if in empty
+						if (move.type != "capture" && move.type != "ranged" && move.type != "convert") {
+							//create possible future around this. sliding at empty
+							let future_board = copy_board(board);
+							if (move.new_state != undefined) future_board[row_count][col_count].state = move.new_state;
+							future_board[current_row][current_col] = future_board[row_count][col_count];
+							future_board[row_count][col_count] = empty_cell;
+							if (move.mandatory_collateral != undefined) { //if pass, this Is a collateral situation
+								let [collateral_row, collateral_col] = rotate(move.mandatory_collateral, cell.direction);
+								collateral_row += row_count;
+								collateral_col += col_count;
+								future_board[collateral_row][collateral_col] = empty_cell;
+							}
+							if (future_board[current_row][current_col].type.promotes) {//if this piece CAN promote and is now facing void... promote
+								let super_void = true;
+								for (let dx = -1; dx <= 1 && super_void; dx++) {
+									let super_void_coord = rotate([dx, 1], future_board[current_row][current_col].direction);
+									super_void_coord[0] += current_row; super_void_coord[1] += current_col;
+									if (in_bounds(future_board, super_void_coord[0], super_void_coord[1])) super_void = false;
+								}
+								if (super_void) { //we can promote. go to each promote state
+									let promotions = future_board[current_row][current_col].type.promotes;
+									for (new_type of promotions) {
+										let futurer_board = copy_board(future_board);
+										futurer_board[current_row][current_col].type = new_type;
+										moves_list.push({origin: [row_count, col_count], destination: [current_row, current_col], result: futurer_board});
+									}
+									break; //continue loop before doing the ordinary moves_list push
+								}
+							}
+							moves_list.push({origin: [row_count, col_count], destination: [current_row, current_col], result: future_board});
+						}
+					} else {
+						if (board[current_row][current_col].team != turn && move.type != "peaceful") { //if hitting enemy, and we aren't peaceful
+							if (checking_royal_threat && board[current_row][current_col].type.royal && board[current_row][current_col].team == royal_team) return true;
+							let future_board = copy_board(board);
+							if (move.new_state != undefined) future_board[row_count][col_count].state = move.new_state;
+							if (move.type == "ranged") {
+								future_board[current_row][current_col] = empty_cell;
+							} else if (move.type == "convert") {
+								future_board[current_row][current_col].team = turn;
+								future_board[current_row][current_col].direction = future_board[row_count][col_count].direction;
+							} else { //normal piece moves there and replaces enemy. no funny
+								future_board[current_row][current_col] = future_board[row_count][col_count];
+								future_board[row_count][col_count] = empty_cell;
+							}
+							if (future_board[current_row][current_col].type.promotes) {//if this piece CAN promote and is now facing void... promote STARIGHT UP COPYING CODE OASDGJDFG i need to fix this function
+								let super_void = true;
+								for (let dx = -1; dx <= 1 && super_void; dx++) {
+									let super_void_coord = rotate([dx, 1], future_board[current_row][current_col].direction);
+									super_void_coord[0] += current_row; super_void_coord[1] += current_col;
+									if (in_bounds(future_board, super_void_coord[0], super_void_coord[1])) super_void = false;
+								}
+								if (super_void) { //we can promote. go to each promote state
+									let promotions = future_board[current_row][current_col].type.promotes;
+									for (new_type of promotions) {
+										let futurer_board = copy_board(future_board);
+										futurer_board[current_row][current_col].type = new_type;
+										moves_list.push({origin: [row_count, col_count], destination: [current_row, current_col], result: futurer_board});
+									}
+									break; //continue loop before doing the ordinary moves_list push
+								}
+							}
+							moves_list.push({origin: [row_count, col_count], destination: [current_row, current_col], result: future_board});
+						}
+						break; //stop the sliding loop
+					}
+					current_row += d_row;
+					current_col += d_col;
+					slide_count++;
+				}
+			} //end for each move
+		} //end 'is this our piece' conditions
+	} //end piece loop
+	if (checking_royal_threat) return false;
+  //for each of moves list, do the remove function on the result
+  for (move of moves_list) {
+    move.result = aux_function(move.result);
+  }
+	return moves_list;
+}
+
+function aux_function(board) {
+  board = copy_board(board);
+  //vertical capture
+  //console.log("searching vertically");
+  for (let y = 0; y < board.length-2; y++) for (let x = 0; x < board[y].length; x++) {
+    let a = board[y][x];
+    let b = board[y+1][x];
+    let c = board[y+2][x];
+    //console.log("teams:",a.team,b.team,c.team);
+    if (a.type && b.type && c.type) if (a.team == c.team && a.team != b.team) {
+      board[y+1][x] = empty_cell;
+      //console.log("situation found vertically");
+    }
+  }
+  //console.log("searching horizontally");
+  for (let y = 0; y < board.length; y++) for (let x = 0; x < board[y].length-2; x++) {
+    let a = board[y][x];
+    let b = board[y][x+1];
+    let c = board[y][x+2];
+    //console.log("teams:",a.team,b.team,c.team);
+    if (a.type && b.type && c.type) if (a.team == c.team && a.team != b.team) {
+      board[y][x+1] = empty_cell;
+      //console.log("situation found horizontally");
+    }
+  }
+  return board;
+}
+
+//once the board is in its good current state, update visuals and get moves ready
+// (to return to a history, use need_rotate=false and set the turn yourself)
+function do_turn(need_rotate = true) {
+	if (need_rotate) turn = (turn+1)%teams;
+	if (!ai_teams.includes(turn)) set_rotation(team_rotations[turn]);
+	update_display_all();
+	highlight_appropriate_squares();
+	if (fog_enabled) set_fog();
+	available_moves = find_legal_moves(turn, board);
+	document.getElementById("current_turn_display").innerText = team_names[turn]+"'s turn";
+	if (forbid_self_check && royalty_threatened(board, turn)) document.getElementById("current_turn_display").innerText += " (in check)";
+	//check for end-of-game conditions
+	if (forbid_self_check && available_moves.length == 0) {
+		if (royalty_threatened(board, turn)) {
+			end_game("Checkmate", turn);
+		} else {
+			end_game("Stalemate", turn);
+		}
+		//highlight_appropriate_squares();
+		return;
+	}
+  //check to see if white king is in corner. then win!
+  for ([y, x] of [[0, 0], [0, board[0].length-1], [board.length-1, 0], [board.length-1, board[0].length-1]]) {
+    if (board[y][x].team == 0 && board[y][x].type == c.king) {end_game("King escape", board[y][x].team); return;}
+  }
+	if (!forbid_self_check && board_history.length-1) {
+		//compare all royalty counts from history[len-1] and board
+		let royalty_counts = [];
+		for (let t = 0; t < teams; t++)
+			royalty_counts[t] = royal_count(t, board)
+		for (let t = 0; t < teams; t++)
+			royalty_counts[t] -= royal_count(t, board_history[board_history.length-2]);
+		//royalty counts now represents difference
+		for (let t = 0; t < teams; t++) if (royalty_counts[t] != 0) {
+			end_game("Royal capture", t);
+			//highlight_appropriate_squares();
+			return;
+		}
+	}
+	if (ai_teams.includes(turn)) {
+		setTimeout(computer_turn, 200);
+	}
+	highlight_appropriate_squares();
+}
+
+function undo_turn(n = 1) {
+	//pop board history to the board, rotate Turn back, and do the turn
+	for (let undos = 0; undos < n; undos++) if (board_history.length > 1) {
+		board = board_history[board_history.length-2];
+		turn = (turn+teams-1)%teams;
+		board_history.pop();
+		[just_happened_origin, just_happened_destination] = [null, null];
+		selection = null;
+	}
+	do_turn(false);
+}
+
+function end_game(kind, turn) {
+	sfx("boom.ogg");
+	clear_fog();
+	for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) {
+		get_celement(row_count, col_count).setAttribute("onmousedown", "");
+		get_celement(row_count, col_count).style.cursor = "default";
+	}
+	document.getElementById("current_turn_display").remove();
+	let html = '<div id="modal">';
+	html += '<h1>'+kind+" on "+team_names[turn]+'</h1>';
+	if (kind == "Checkmate") {
+		html += '<p>'+team_names[turn]+' is in check, but has no legal moves. '+team_names[turn]+' loses.</p>';
+	} else if (kind == "Stalemate") {
+		html += '<p>'+team_names[turn]+'\ has no legal moves, but is not in check. This game is a draw.</p>';
+	} else if (kind == "Royal capture") {
+		html += '<p>'+team_names[turn]+'\'s king has been captured. '+team_names[turn]+' loses.</p>';
+	} else if (kind == "King escape") {
+		html += '<p>'+team_names[turn]+'\'s king has escaped. They win!</p>';
+	}
+	html += '<button onclick="sfx(\'sfxdeselect.mp3\'); this.parentElement.remove();">Close</button>';
+	html += '</div>';
+	document.body.insertAdjacentHTML("beforeend", html);
+	console.log(kind);
+}
+//these functions work with the ui. current board state! no future handling
+function click_cell(row, col) {
+	if (ai_teams.includes(turn)) return;
+	//deselecting space
+	if (selection != null && row == selection[0] && col == selection[1]) {
+		selection = null;
+		sfx("sfxdeselect.mp3");
+		highlight_appropriate_squares();
+		return;
+	}
+	//using an available move
+	if (selection != null) for (move of available_moves) {
+		if (move.destination[0] == row && move.destination[1] == col && move.origin[0] == selection[0] && move.origin[1] == selection[1]) {
+			accept_move(move);
+			return;
+		}
+	}
+	//selecting a new space from our team
+	if (board[row][col].team == turn) {
+		selection = [row, col];
+		sfx("sfxselect.mp3");
+		highlight_appropriate_squares();
+		return;
+	}
+}
+
+//for actually commiting a move object
+function accept_move(move) {
+	let evaluation_change = board_evaluation(turn, move.result) - board_evaluation(turn, board);
+	board = move.result;
+	board_history.push(board);
+	selection = null;
+	just_happened_origin = move.origin;
+	just_happened_destination = move.destination;
+	sfx(evaluation_change == 0 ? "sfxmove.mp3" : "sfxtake.mp3");
+	do_turn();
+}
+
+function sfx(noise, backwards = false) {
+  try{
+	let a = new Audio((backwards?"../":"")+"sfx/"+noise);
+	a.volume = 0.5;
+	a.play();
+  } catch(e) {}
+}
+
+function highlight_appropriate_squares() { //do square highlighting
+	for (let row_count = 0; row_count < board.length; row_count++) for (let col_count = 0; col_count < board[row_count].length; col_count++) {
+		get_celement(row_count, col_count).setAttribute("highlight", "");
+		if (board[row_count][col_count].team == turn && !ai_teams.includes(turn)) {
+			get_celement(row_count, col_count).setAttribute("highlight", "owned");
+			get_celement(row_count, col_count).offsetHeight;
+		}
+	}
+	if (just_happened_origin != null) {
+		get_celement(just_happened_origin[0], just_happened_origin[1]).setAttribute("highlight", "just_happened"); //actively selected piece
+	}
+	if (just_happened_destination != null) {
+		get_celement(just_happened_destination[0], just_happened_destination[1]).setAttribute("highlight", "just_happened"); //actively selected piece
+	}
+	if (selection != null) {
+		get_celement(selection[0], selection[1]).setAttribute("highlight", "origin"); //actively selected piece
+		for (move of available_moves) if (move.origin[0] == selection[0] && move.origin[1] == selection[1]) {
+			get_celement(move.destination[0], move.destination[1]).setAttribute("highlight", "destination");
+		}
+	}
+}
+
+//creates a copy of the board. piece objects are recreated. references to the piece types are maintained.
+//used to explore future board states without altering the existing board
+function copy_board(board) {
+	let new_board = [];
+	for (row of board) {
+		let new_row = [];
+		new_board.push(new_row);
+		for (cell of row) {
+			if (typeof(cell) == "number") {
+				new_row.push(cell);
+				continue;
+			}
+			new_row.push({
+				team: cell.team,
+				direction: cell.direction,
+				state: cell.state,
+				type: cell.type
+			});
+		}
+	}
+	return new_board;
+}
+
+function in_bounds(board, row_count, col_count, counting_void = true) {
+	if (row_count < 0 || row_count >= board.length) return false;
+	if (col_count < 0 || col_count >= board[row_count].length) return false; 
+	if (board[row_count][col_count] == oob_cell && counting_void) return false;
+	return true;
+}
+
+function square_name(row, col) {
+	return "abcdefghijklmnopqrstuvwxyz".split("")[col] + (board.length - row);
+}
+
+//using global available_moves, does a turn for us.
+function computer_turn() {
+	//console.log("thinking...");
+	let time = Date.now();
+	let move;
+	if (ai_type == "minimax") {
+		move = best_move_for(turn, board);
+	} else if (ai_type == "heuristic") {
+		move = heuristic_best_move_for(turn, board);
+	} else {
+		move = find_legal_moves(turn, board);
+		move = move[Math.floor(Math.random()*move.length)];
+	}
+	//let move = best_move_for(turn, board);
+	time = Date.now() - time;
+	//console.log("took "+time/1000+" seconds");
+	//console.log("done thinking");
+	accept_move(move);
+}
+
+//evaluates how much a board state is in favor of some team
+function board_evaluation(team, board) {
+	let points = [];
+	for (let i = 0; i < teams; i++) points[i] = 0;
+	for (row of board) for (cell of row) {
+		if (cell.team != undefined) points[cell.team] += cell.type.worth;
+	}
+	let our_advantage = 0;
+	for (let opposing = 0; opposing < teams; opposing++) our_advantage += points[team] - points[opposing];
+	return our_advantage;
+}
+
+function best_move_for(team, board, depth = 3) {
+	if (depth == 1) {
+		let available = find_legal_moves(team, board);
+		if (available.length == 0) return 0; //this player is trapped. keep that in mind when returning to previous layer
+		let evals = [];
+		for (a of available) evals.push(board_evaluation(team, board));
+		let max_eval = evals[0];
+		for (e of evals) if (e > max_eval) max_eval = e;
+		let best_of_available = [];
+		for (let i = 0; i < evals.length; i++) if (evals[i] == max_eval) best_of_available.push(available[i]);
+		return best_of_available[Math.floor(Math.random()*best_of_available.length)];
+	} else {
+		let available = find_legal_moves(team, board);
+		if (available.length == 0) return 0;
+		//among the legal moves, let's predict how the next person will respond
+		let next_team = (team+1)%teams;
+		let evals = []; //evaluation in terms of our own benefit still
+		for (a of available) {
+			let their_response = best_move_for(next_team, a.result, depth-1);
+			if (their_response == 0) {
+				//they have no available moves here. if they're in danger, checkmate; otherwise, stalemate
+				evals.push(royalty_threatened(next_team, a.result) ? 99999 : 0);
+			} else {
+				//The actual board evaluation for this possible future
+				let the_evaluation = board_evaluation(team, their_response.result);
+				evals.push(the_evaluation); //this is how good we'll end up if we go through with their plans
+			}
+		}
+		let max_eval = evals[0];
+		for (e of evals) if (e > max_eval) max_eval = e;
+		let best_of_available = [];
+		for (let i = 0; i < evals.length; i++) if (evals[i] == max_eval) best_of_available.push(available[i]);
+		return best_of_available[Math.floor(Math.random()*best_of_available.length)];
+	}
+}
+
+let heuristic_weights = {
+	current_material: 500,
+	available_moves: 5,
+	mate: 1000000,
+	they_capture_back: 800,
+	using_cheap: 5,
+	we_capture_back_with_cheap: 50,
+	using_royalty: -1000,
+	distance: 5,
+	center_bias: 3,
+	random: 2
+};
+function heuristic_best_move_for(team, board) {
+	let og_eval = board_evaluation(team, board);
+	let available = find_legal_moves(team, board);
+	//create evaluations
+	let highest_quality = Number.NEGATIVE_INFINITY;
+	let best_move;
+	for (av of available) {
+		let heuristic = {
+			current_material: 0,
+			available_moves: 0,
+			mate: 0,
+			they_capture_back: 0,
+			using_cheap: 0,
+			we_capture_back_with_cheap: 0,
+			using_royalty: 0,
+			distance: 0,
+			center_bias: 0
+		}; //contains subscores
+		let this_eval = board_evaluation(team, av.result); //av.result's eval
+		heuristic.current_material = this_eval / 10;
+		let my_next_moves = find_legal_moves(team, av.result); //these are moves if i could go again
+		let their_next_moves = find_legal_moves((team+1)%teams, av.result);
+		heuristic.available_moves += Math.sqrt(my_next_moves.length) - Math.sqrt(their_next_moves.length);
+		if (their_next_moves.length == 0) heuristic.mate = 100;
+		for (each of their_next_moves) { //if any of their responses can penalize us, punish
+			let our_eval_change = board_evaluation(team, each.result) - this_eval; //negative means bad things happen
+			if (our_eval_change < 0) heuristic.they_capture_back = Math.min(heuristic.they_capture_back, our_eval_change / 10); //use worst case
+		}
+		for (each of my_next_moves) { //find if we attack anything with cheap
+			let origin = board[av.origin[0]][av.origin[1]]; //piece we used to cause this
+			let eval_change = board_evaluation(team, each.result) - this_eval; //amount of havoc our next play could cause. positive is good for us
+			if (eval_change) {
+				heuristic.we_capture_back_with_cheap = Math.max(heuristic.we_capture_back_with_cheap, 1 / (origin.type.worth * origin.type.worth) / 10);
+			}
+		}
+		//for every possible destination square. my move ++ it by inverse of piece value. their move -- it by inverse of piece value. positive means i control easily with small value pieces
+		heuristic.using_cheap = 1 / board[av.origin[0]][av.origin[1]].type.worth;
+		if (board[av.origin[0]][av.origin[1]].type.royal) heuristic.using_royalty = 1000;
+		heuristic.distance = (Math.abs(av.origin[0] - av.destination[0]) + Math.abs(av.origin[1] - av.destination[1]));
+		heuristic.center_bias = 0 - (Math.abs(board.length*0.5 - av.destination[0]) + Math.abs(board[0].length*0.5 - av.destination[1]));
+		if (board[av.origin[0]][av.origin[1]].type.royal) heuristic.center_bias *= -1;
+		//find heuristic weighted total
+		let heuristic_score = 0;
+		for (subscore of Object.keys(heuristic)) heuristic_score += heuristic_weights[subscore]/(1+Math.exp(0-heuristic[subscore]));
+		heuristic_score += heuristic_weights.random * Math.random();
+		//if (turn) heuristic_score *= -1;
+		//console.log(heuristic_score);
+		if (heuristic_score > highest_quality) {
+			highest_quality = heuristic_score;
+			best_move = av;
+		}
+	}
+	return best_move;
+}
+
+let last_rotation_deg = 0;
+function set_rotation(n) { //0 up, 1 left, 2 down, 3 right
+	if (!rotation_enabled) return;
+	let deg = n*90; //choice%360 == deg
+	let going_down = last_rotation_deg;
+	while (Math.abs(going_down)%360 != deg) going_down -= 90;
+	let going_up = last_rotation_deg;
+	while (going_up%360 != deg) going_up += 90;
+	deg = Math.abs(going_up - last_rotation_deg) > Math.abs(going_down - last_rotation_deg) ? going_down : going_up;
+	last_rotation_deg = deg;
+	let css = '';
+	css += 'tbody {transform: rotate('+deg+'deg);}';
+	css += 'td img {transform: rotate(-'+deg+'deg);}';
+	document.getElementById("rotation_css").innerHTML = css;
+}
+
+function royal_count(team, board) { //used to check if something happened to royalty over some move. if !forbid_self_check
+	let count = 0;
+	for (row of board) for (cell of row) if (cell.team == team) if (cell.type.royal) count++;
+	return count;
+}
+  </script>
+  <script>/*
+
+Every instance of a piece on the board contains these attributes
+- team: the team of the piece. 0=white, 1=black...
+- direction: direction of the piece's movement. 0=up, 1=left, 2=down, 3=right
+- state: starts at 0. rules can check/alter this state for conditional rules
+- type: points to object in piece catalogue
+
+Every piece object in the catalogue (c) includes these attributes
+- name: a short name
+- letter: the displayed letter. currently uses chess cases font. can include a wrapping <span style="transform: rotate()">
+- worth: its value (pawn = 1), used for the ai
+- moves: an array of move objects
+
+Each move object includes these attributes (* denotes optional)
+- type {normal, capture, peaceful, ranged, convert, castle}. this partially defines its behavior
+	- if normal, it can move or capture
+	- if capture, it MUST capture (like diagonal pawns)
+	- if peaceful, it can only go to empty spot (like forward pawns)
+	- if ranged, it can hit the offset tile but does not move
+	- if convert, it converts the offset tile to its own team
+	- if castle, it seeks for a "friend" (property of move) along the offset, and shuffles with it if found. see c.king.moves for how this is implemented
+- motion: an [x, y] vector for the offset for this move
+- *limit: the maximum number of times this movement can be made in a turn. for infinitely sliding pieces, limit is undefined
+- *void_condition: if provided, an [x, y] offset that must be out of bounds for this move to be valid
+- *empty_condition
+- *mandatory_collateral: if provided, an [x, y] offset that must be an opponent piece that will be killed also. can also include piece type of opponent and opponent
+- *required_state: a state this piece must be in to take this move
+- *new_state: the new state this piece will become after this move happens
+
+*/
+let c = {}; //piece catalogue
+
+c.rook = {
+	name: "rook",
+	svg: [
+		"https://upload.wikimedia.org/wikipedia/commons/7/72/Chess_rlt45.svg",
+		"https://upload.wikimedia.org/wikipedia/commons/f/ff/Chess_rdt45.svg"
+	],
+	worth: 5,
+	moves: [
+		{type: "normal", motion: [0, 1], new_state: 1},
+		{type: "normal", motion: [0, -1], new_state: 1},
+		{type: "normal", motion: [-1, 0], new_state: 1},
+		{type: "normal", motion: [1, 0], new_state: 1}
+	]
+};
+c.bishop = {
+	name: "bishop",
+	svg: [
+		"https://upload.wikimedia.org/wikipedia/commons/b/b1/Chess_blt45.svg",
+		"https://upload.wikimedia.org/wikipedia/commons/9/98/Chess_bdt45.svg"
+	],
+	worth: 3,
+	moves: [
+		{type: "normal", motion: [1, 1]},
+		{type: "normal", motion: [1, -1]},
+		{type: "normal", motion: [-1, 1]},
+		{type: "normal", motion: [-1, -1]}
+	]
+};
+c.queen = {
+	name: "queen",
+	svg: [
+		"https://upload.wikimedia.org/wikipedia/commons/1/15/Chess_qlt45.svg",
+		"https://upload.wikimedia.org/wikipedia/commons/4/47/Chess_qdt45.svg"
+	],
+	worth: 9,
+	moves: [
+		{type: "normal", motion: [1, 1]},
+		{type: "normal", motion: [1, -1]},
+		{type: "normal", motion: [-1, 1]},
+		{type: "normal", motion: [-1, -1]},
+		{type: "normal", motion: [0, 1]},
+		{type: "normal", motion: [0, -1]},
+		{type: "normal", motion: [-1, 0]},
+		{type: "normal", motion: [1, 0]}
+	]
+};
+c.king = {
+	name: "king",
+	svg: [
+		"https://upload.wikimedia.org/wikipedia/commons/4/42/Chess_klt45.svg",
+		"https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg"
+	],
+	worth: 4,
+	royal: true,
+	moves: [
+		{type: "normal", motion: [1, 1], limit: 1, new_state: 1},
+		{type: "normal", motion: [1, -1], limit: 1, new_state: 1},
+		{type: "normal", motion: [-1, 1], limit: 1, new_state: 1},
+		{type: "normal", motion: [-1, -1], limit: 1, new_state: 1},
+		{type: "normal", motion: [0, 1], limit: 1, new_state: 1},
+		{type: "normal", motion: [0, -1], limit: 1, new_state: 1},
+		{type: "normal", motion: [-1, 0], limit: 1, new_state: 1},
+		{type: "normal", motion: [1, 0], limit: 1, new_state: 1},
+		{type: "castle", motion: [1, 0], friend: "rook", required_state: 0, new_state: 1},
+		{type: "castle", motion: [-1, 0], friend: "rook", required_state: 0, new_state: 1}
+	]
+};
+c.knight = {
+	name: "knight",
+	svg: [
+		"https://upload.wikimedia.org/wikipedia/commons/7/70/Chess_nlt45.svg",
+		"https://upload.wikimedia.org/wikipedia/commons/e/ef/Chess_ndt45.svg"
+	],
+	worth: 3,
+	moves: [
+		{type: "normal", motion: [2, 1], limit: 1},
+		{type: "normal", motion: [2, -1], limit: 1},
+		{type: "normal", motion: [-2, 1], limit: 1},
+		{type: "normal", motion: [-2, -1], limit: 1},
+		{type: "normal", motion: [1, 2], limit: 1},
+		{type: "normal", motion: [1, -2], limit: 1},
+		{type: "normal", motion: [-1, 2], limit: 1},
+		{type: "normal", motion: [-1, -2], limit: 1}
+	]
+};
+c.pawn = {
+	name: "pawn",
+	svg: [
+		"https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg",
+		"https://upload.wikimedia.org/wikipedia/commons/c/c7/Chess_pdt45.svg"
+	],
+	worth: 1,
+	moves: [
+		{type: "peaceful", motion: [0, 1], limit: 1, new_state: 1}, //u can always move one forward
+		{type: "peaceful", motion: [0, 2], limit: 1, empty_condition: [0, 1], new_state: 2, required_state: 0}, //double up
+		{type: "capture", motion: [1, 1], limit: 1, new_state: 1}, //capture left
+		{type: "capture", motion: [-1, 1], limit: 1, new_state: 1}, //capture right
+		{type: "peaceful", motion: [1, 1], limit: 1, mandatory_collateral: [1, 0, "pawn", 2], new_state: 1}, //en passant right
+		{type: "peaceful", motion: [-1, 1], limit: 1, mandatory_collateral: [-1, 0, "pawn", 2], new_state: 1} //en passant left
+	]
+};
+
+c.pawn.promotes = [c.queen, c.bishop, c.rook, c.knight];
+
+let white_rook = {team: 0, direction: 0, state: 0, type: c.rook};
+let black_rook = {team: 1, direction: 2, state: 0, type: c.rook};
+let white_bish = {team: 0, direction: 0, state: 0, type: c.bishop};
+let black_bish = {team: 1, direction: 2, state: 0, type: c.bishop};
+let white_quee = {team: 0, direction: 0, state: 0, type: c.queen};
+let black_quee = {team: 1, direction: 2, state: 0, type: c.queen};
+let white_king = {team: 0, direction: 0, state: 0, type: c.king};
+let black_king = {team: 1, direction: 2, state: 0, type: c.king};
+let white_knig = {team: 0, direction: 0, state: 0, type: c.knight};
+let black_knig = {team: 1, direction: 2, state: 0, type: c.knight};
+let white_pawn = {team: 0, direction: 0, state: 0, type: c.pawn};
+let black_pawn = {team: 1, direction: 2, state: 0, type: c.pawn};
+
+function board_from_simple_fen(fen) {
+	let map_map = {
+		" ": empty_cell,
+		"*": oob_cell,
+		"p": black_pawn,
+		"P": white_pawn,
+		"k": black_king,
+		"K": white_king,
+		"q": black_quee,
+		"Q": white_quee,
+		"b": black_bish,
+		"B": white_bish,
+		"r": black_rook,
+		"R": white_rook,
+		"n": black_knig,
+		"N": white_knig,
+	}
+	fen = fen.replaceAll("1", " ");
+	fen = fen.replaceAll("2", "  ");
+	fen = fen.replaceAll("3", "   ");
+	fen = fen.replaceAll("4", "    ");
+	fen = fen.replaceAll("5", "     ");
+	fen = fen.replaceAll("6", "      ");
+	fen = fen.replaceAll("7", "       ");
+	fen = fen.replaceAll("8", "        ");
+	fen = fen.replaceAll("9", "         ");
+	let b = [];
+	for (row of fen.split("/")) {
+		let r = [];
+		for (character of row.split("")) {
+			r.push(map_map[character]);
+		}
+		b.push(r);
+	}
+	return b;
+}
+  </script>
+  <script>
+  //handles the form at the start of the game, loading .js, stuff like that
+
+	function rules_loaded() {
+		//create the modal that can start the game
+		let html = '';
+		html += '<h1>'+rules_name+'</h1>';
+		html += '<p>'+rules_description+'</p>';
+		teams = 0;
+		for (row of board) for (cell of row) if (cell.team != undefined) teams = Math.max(teams, cell.team);
+		teams++;
+		html += '<hr>';
+		html += '<aside>Players</aside>';
+		let player_team = 0;
+		for (let i = 0; i < teams; i++) {
+			html += '<div><input type="checkbox" id="ai_checkbox_'+i+'" name="ai_checkbox_'+i+'" '+(i!=player_team?'checked':'')+'><label for="ai_checkbox_'+i+'">Let CPU play as '+team_names[i]+'</label></div>';
+		}
+		html += '<select id="ai_select">';
+		for (each of "Random Heuristic Minimax".split(" ")) {
+			html += '<option value="'+each.toLowerCase()+'"'+(each.toLowerCase() == ai_type ? ' selected' : '')+'>'+each+'</option>';
+		}
+		html += '</select><label>CPU algorithm</label><br>';
+		html += '<select id="turn_select">';
+		for (let i = 0; i < teams; i++) {
+			html += '<option'+(i==turn?' selected':'')+'>'+team_names[i]+'</option>';
+		}
+		html += '</select><label>plays first</label>';
+		html += '<hr>';
+		html += '<aside>Settings</aside>';
+		html += '<div><input type="checkbox" id="coords_checkbox" name="coords_checkbox"><label for="coords_checkbox">Show coordinates</label></div>';
+		html += '<div><input type="checkbox" id="rotation_checkbox" name="rotation_checkbox"><label for="rotation_checkbox">Rotate board</label></div>';
+		html += '<div><input type="checkbox" id="fog_checkbox" name="fog_checkbox"><label for="fog_checkbox">Fog of war</label></div>';
+		//html += '<button onclick="start_game();" style="margin-top: -2rem;">Start</button>';
+		document.getElementById("modal").innerHTML = html;
+		//document.getElementById("title").innerText = document.getElementById("modal").getElementsByTagName("h1")[0].innerText+" - Chess Sandbox";
+    document.getElementById("games_catalogue").style.animation = "1.1s games_catalogue_out";
+    setTimeout(start_game, 1000);
+	}
+  
+  rules_name = "Tafl";
+rules_description = "";
+forbid_self_check = false;
+
+//board = board_from_simple_fen("1p1/3/1P1")
+
+delete c.pawn.promotes;
+ai_type = "heuristic";
+c.pawn.moves = [
+		{type: "peaceful", motion: [0, 1]},
+		{type: "peaceful", motion: [0, -1]},
+		{type: "peaceful", motion: [-1, 0]},
+		{type: "peaceful", motion: [1, 0]}
+	];
+c.king.moves = [
+		{type: "peaceful", motion: [0, 1]},
+		{type: "peaceful", motion: [0, -1]},
+		{type: "peaceful", motion: [-1, 0]},
+		{type: "peaceful", motion: [1, 0]}
+	];
+
+
+//board = board_from_simple_fen("2ppp2/3p3/p1PPP1p/ppPKPpp/p1PPP1p/3p3/2ppp2"); //ard ri
+//board = board_from_simple_fen("3p3/3p3/3P3/ppPKPpp/3P3/3p3/3p3"); //brandubh
+//board = board_from_simple_fen("3ppppp3/5p5/515/p4P4p/p3PPP3p/pp1PPKPP1pp/p3PPP3p/p4P4p/515/5p5/3ppppp3"); // hnefatafl
+//board = board_from_simple_fen("3ppp3/4p4/4P4/p3P3p/ppPPKPPpp/p3P3p/4P4/4p4/3ppp3"); //tablut
+//board = board_from_simple_fen("4ppp4/4p1p4/5p5/5P5/pp2PPP2pp/p1pPPKPPp1p/pp2PPP2pp/5P5/5p5/4p1p4/4ppp4"); //Tawlbwrdd
+
+//rules_loaded();
+
+  </script>
+  <div id="games_catalogue">
+    <div onclick="board = board_from_simple_fen('2ppp2/3p3/p1PPP1p/ppPKPpp/p1PPP1p/3p3/2ppp2'); rules_loaded();">
+      <img src="tafl-0.png">
+      <p>Ard Rí</p>
+    </div>
+    <div onclick="board = board_from_simple_fen('3p3/3p3/3P3/ppPKPpp/3P3/3p3/3p3'); rules_loaded();">
+      <img src="tafl-1.png">
+      <p>Brandubh</p>
+    </div>
+    <div onclick="board = board_from_simple_fen('3ppppp3/5p5/515/p4P4p/p3PPP3p/pp1PPKPP1pp/p3PPP3p/p4P4p/515/5p5/3ppppp3'); rules_loaded();">
+      <img src="tafl-2.png">
+      <p>Hnefatafl</p>
+    </div>
+    <div onclick="board = board_from_simple_fen('3ppp3/4p4/4P4/p3P3p/ppPPKPPpp/p3P3p/4P4/4p4/3ppp3'); rules_loaded();">
+      <img src="tafl-3.png">
+      <p>Tablut</p>
+    </div>
+    <div onclick="board = board_from_simple_fen('4ppp4/4p1p4/5p5/5P5/pp2PPP2pp/p1pPPKPPp1p/pp2PPP2pp/5P5/5p5/4p1p4/4ppp4'); rules_loaded();">
+      <img src="tafl-4.png">
+      <p>Tawlbwrdd</p>
+    </div>
+  </div>
+</body>
+</html>
