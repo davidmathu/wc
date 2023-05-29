@@ -275,8 +275,6 @@
       from {opacity: 0; transform: translate(-50%, -50%) translateY(4rem);}
     }
     #sources {
-      width: 50vw;
-      height: 80vh;
       background-color: #001;
       position: fixed;
       left: 50%;
@@ -288,6 +286,7 @@
       border-radius: 0.25rem;
       font-size: 1.125rem;
       animation: 1.5s sources_enter;
+      font-size: 1.5rem;
     }
     #sources ::selection {
       color: black;
@@ -295,7 +294,8 @@
     }
     #sources button {
       --color: gray;
-      position: absolute;
+      margin: 0 auto;
+      display: block;
       bottom: 2rem;
       right: 2rem;
     }
@@ -304,12 +304,16 @@
 <body>
   <script src="https://github.com/processing/p5.js/releases/download/v1.5.0/p5.min.js"></script>
   <div id="canvas_container"></div>
-  <nav>
+  <!--<nav>
     <a onclick="document.querySelector('#sources').style.display = 'block'">Sources</a>
   </nav>
   <div id="sources" style="display: none;">
     <p>Abc</p>
     <button onclick="document.querySelector('#sources').style.display = 'none'">Close</button>
+  </div>-->
+  <div id="sources">
+    <p>Click and drag the globe to navigate</p>
+    <button onclick="this.parentElement.remove();">Okay</button>
   </div>
   <main>
     <section latitude="28" longitude="138" color="2453F6" name="Royal Game of Ur" origin="Mesopotamia" iframe="royalgame.html" image="prev-royalgame.jpg" flag="https://upload.wikimedia.org/wikipedia/commons/f/f6/Flag_of_Iraq.svg">
@@ -396,7 +400,7 @@
         </section>
       </article>
     </section>
-    <section latitude="15" longitude="106" color="28D742" name="Mancala" origin="Africa and Asia" iframe="mancala.html" image="prev-mancala.jpg" flag="">
+    <section latitude="15" longitude="106" color="28D742" name="Mancala" origin="Africa and Asia" iframe="mancala.html" image="prev-mancala.jpg" flag="" cpuopponent>
       <p>A family of board games where players drop pebbles into holes. The goal is to collect as many pebbles as possible in your home hole, or "mancala".</p>
       <article>
         <section>

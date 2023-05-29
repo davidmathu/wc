@@ -3,6 +3,7 @@
 <head>
 	<style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+    html {font-size: 2vh;}
     	body {
         	background-color: #eed;
           margin: 0;
@@ -19,6 +20,7 @@
           background-color: #e6e6cd;
           border-radius: 100%;
           padding: 4rem;
+          animation: 1s main_enter;
         }
         
         button {
@@ -36,6 +38,7 @@
             font-family: inherit;
             font-size: 2rem;
             box-shadow: 0 0 1rem #86865d, inset 0.25rem 0.25rem #ffffff44, inset -0.25rem -0.25rem #00000044;
+            animation: 1.5s button_enter;
         }
         
         button[turn="yes"] {
@@ -59,10 +62,21 @@
           box-shadow: 0 0 1rem #44331140;
           color: #222;
         }
+        
+        @keyframes turn_indicator_enter {
+          from {opacity: 0; bottom: 0;}
+        }
+        @keyframes main_enter {
+          from {opacity: 0; transform: translate(-50%, -50%) translateY(-1rem) scale(0.9);}
+        }
+        @keyframes button_enter {
+          from {opacity: 0; transform: translateY(-2rem);}
+        }
     </style>
 </head>
 <body>
 <main></main>
+<p id="turn_indicator" style="width: 100%; text-align: center; position: fixed; bottom: 2rem; font-weight: bold; color: #333; animation: 1s turn_indicator_enter;">Black's Turn (You)</p>
 <script>
 let white = 0;
 let black = 1;
@@ -112,11 +126,11 @@ function do_button_positions() {
   for (let i = 0; i < agon+1; i++) {
     if (i < agon) {
       // set position to cis(i * 2pi / 8)
-      buttons[i].style.left = Math.round(scale * (1+Math.sin(i*2*Math.PI/agon+angle))) +64+ "px";
-      buttons[i].style.top = Math.round(scale*(1+Math.cos(i*2*Math.PI/agon+angle))) +64+ "px";
+      buttons[i].style.left = (Math.round(scale * (1+Math.sin(i*2*Math.PI/agon+angle))) +64)/16+ "rem";
+      buttons[i].style.top = (Math.round(scale*(1+Math.cos(i*2*Math.PI/agon+angle))) +64)/16+ "rem";
     } else {
-      buttons[i].style.left = Math.round(scale) +64+ "px";
-      buttons[i].style.top = Math.round(scale) +64+ "px";
+      buttons[i].style.left = (Math.round(scale) +64)/16+ "rem";
+      buttons[i].style.top = (Math.round(scale) +64)/16+ "rem";
   	}
   }
 }
@@ -140,7 +154,7 @@ function visual_update() { //for text
     }
     if (!any_available) {
       let h3 = document.createElement("h3");
-      h3.innerText = "The "+["white", "black"][turn]+" team wins!";
+      h3.innerText = ["Computer player wins!", "You win!"][turn];
       h3.style.backgroundColor = team_colors[(turn+1)%2];
       h3.style.color = team_colors_text[(turn+1)%2];
       document.body.appendChild(h3);
@@ -151,6 +165,7 @@ function visual_update() { //for text
 let turn = 0;
 function rotate_turn() {
 	turn = (turn+1)%teams;
+  document.querySelector("#turn_indicator").innerText = ["Black's Turn (You)", "White's Turn (CPU)"][turn];
 }
 
 function click_spot(n, cpu_after = true) {
